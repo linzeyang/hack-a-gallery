@@ -3,8 +3,22 @@ import type { IStorageAdapter } from '@/lib/types/storage';
 /**
  * LocalStorage Adapter
  * 
- * Phase 1 implementation of IStorageAdapter using browser localStorage.
+ * Phase 1 (MVP) implementation of IStorageAdapter using browser localStorage.
  * Provides type-safe storage operations with JSON serialization.
+ * 
+ * IMPORTANT: This adapter only works in browser context (client-side).
+ * Pages using this adapter MUST be Client Components with "use client" directive.
+ * 
+ * Limitations:
+ * - Cannot be used in Server Components or during SSR
+ * - No SEO benefits (data not available during initial render)
+ * - Slower initial page load (data fetched after JavaScript loads)
+ * - Data stored locally per browser (not shared across devices)
+ * 
+ * Migration Path:
+ * When switching to AWS/API storage, this adapter will be replaced with
+ * AwsStorageAdapter or ApiStorageAdapter, allowing pages to become Server
+ * Components again and regain SSR benefits.
  * 
  * This adapter can be easily swapped for API or AWS storage adapters
  * without changing any service layer code.

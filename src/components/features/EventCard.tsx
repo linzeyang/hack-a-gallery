@@ -1,0 +1,102 @@
+'use client';
+
+import React from 'react';
+import { Card } from '@/components/ui/Card';
+import type { Event } from '@/lib/types/event';
+
+export interface EventCardProps {
+  event: Event;
+  onClick?: () => void;
+}
+
+export const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  const totalPrizeAmount = event.prizes.reduce((total, prize) => {
+    const amount = parseFloat(prize.amount.replace(/[^0-9.-]+/g, ''));
+    return total + (isNaN(amount) ? 0 : amount);
+  }, 0);
+
+  return (
+    <Card
+      hover
+      className="cursor-pointer"
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
+    >
+      <div className="relative h-48 w-full bg-gradient-to-br from-blue-500 to-purple-600">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center text-white p-4">
+            <h3 className="text-2xl font-bold mb-2">{event.name}</h3>
+            <p className="text-sm opacity-90">{event.location}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center text-sm text-gray-600">
+            <svg
+              className="w-4 h-4 mr-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <span>
+              {formatDate(event.startDate)} - {formatDate(event.endDate)}
+            </span>
+          </div>
+        </div>
+
+        <p className="text-gray-700 mb-4 line-clamp-3">{event.description}</p>
+
+        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+          <div className="flex items-center text-sm">
+            <svg
+              className="w-5 h-5 mr-1 text-yellow-500"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+            <span className="font-semibold text-gray-900">
+              {event.prizes.length} {event.prizes.length === 1 ? 'Prize' : 'Prizes'}
+            </span>
+            {totalPrizeAmount > 0 && (
+              <span className="ml-2 text-gray-600">
+                ${totalPrizeAmount.toLocaleString()}
+              </span>
+            )}
+          </div>
+
+          <div className="text-sm text-gray-500">
+            by {event.organizerName}
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+};
