@@ -27,19 +27,20 @@ export const EventsList: React.FC<EventsListProps> = ({ events }) => {
 
   return (
     <div>
-      <div className="flex justify-end mb-6">
-        <Button onClick={() => router.push('/events/create')}>
+      <div className="flex justify-end mb-4 sm:mb-6">
+        <Button onClick={() => router.push('/events/create')} aria-label="Create a new event">
           Create Event
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" role="list">
         {events.map((event) => (
-          <EventCard
-            key={event.id}
-            event={event}
-            onClick={() => router.push(`/events/${event.id}`)}
-          />
+          <div key={event.id} role="listitem">
+            <EventCard
+              event={event}
+              onClick={() => router.push(`/events/${event.id}`)}
+            />
+          </div>
         ))}
       </div>
     </div>

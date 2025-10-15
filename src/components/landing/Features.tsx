@@ -33,7 +33,7 @@ export default function Features() {
   ];
 
   return (
-    <section className="py-20 sm:py-24 bg-white dark:bg-gray-900">
+    <section className="py-20 sm:py-24 bg-white dark:bg-gray-900" aria-label="Platform features">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -47,25 +47,25 @@ export default function Features() {
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {features.map((feature, index) => (
-            <div
+            <article
               key={index}
-              className="p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-colors duration-150 ease-in-out hover:shadow-lg"
+              className="p-4 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-colors duration-150 ease-in-out hover:shadow-lg"
             >
               {/* Icon */}
-              <div className="text-4xl mb-4">{feature.icon}</div>
+              <div className="text-3xl sm:text-4xl mb-3 sm:mb-4" aria-hidden="true">{feature.icon}</div>
               
               {/* Title */}
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">
                 {feature.title}
               </h3>
               
               {/* Description */}
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                 {feature.description}
               </p>
-            </div>
+            </article>
           ))}
         </div>
       </div>

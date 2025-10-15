@@ -38,20 +38,20 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
         }
       }}
     >
-      <div className="relative h-48 w-full bg-gradient-to-br from-blue-500 to-purple-600">
+      <div className="relative h-40 sm:h-48 w-full bg-gradient-to-br from-blue-500 to-purple-600">
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white p-4">
-            <h3 className="text-2xl font-bold mb-2">{event.name}</h3>
-            <p className="text-sm opacity-90">{event.location}</p>
+            <h3 className="text-xl sm:text-2xl font-bold mb-2 line-clamp-2">{event.name}</h3>
+            <p className="text-xs sm:text-sm opacity-90">{event.location}</p>
           </div>
         </div>
       </div>
 
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center text-sm text-gray-600">
+      <div className="p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
+          <div className="flex items-center text-xs sm:text-sm text-gray-600">
             <svg
-              className="w-4 h-4 mr-1"
+              className="w-4 h-4 mr-1 flex-shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -64,18 +64,18 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            <span>
+            <span className="truncate">
               {formatDate(event.startDate)} - {formatDate(event.endDate)}
             </span>
           </div>
         </div>
 
-        <p className="text-gray-700 mb-4 line-clamp-3">{event.description}</p>
+        <p className="text-sm sm:text-base text-gray-700 mb-4 line-clamp-3">{event.description}</p>
 
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-          <div className="flex items-center text-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-gray-200 gap-2">
+          <div className="flex items-center text-xs sm:text-sm">
             <svg
-              className="w-5 h-5 mr-1 text-yellow-500"
+              className="w-4 h-4 sm:w-5 sm:h-5 mr-1 text-yellow-500 flex-shrink-0"
               fill="currentColor"
               viewBox="0 0 20 20"
               xmlns="http://www.w3.org/2000/svg"
@@ -92,7 +92,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
             )}
           </div>
 
-          <div className="text-sm text-gray-500">
+          <div className="text-xs sm:text-sm text-gray-500 truncate">
             by {event.organizerName}
           </div>
         </div>

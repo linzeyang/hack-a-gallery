@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function CallToAction() {
   return (
-    <section className="py-20 sm:py-24 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-700">
+    <section className="py-20 sm:py-24 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-700" aria-label="Call to action">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           {/* Heading */}

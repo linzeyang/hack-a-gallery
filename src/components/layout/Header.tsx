@@ -21,13 +21,13 @@ export default function Header() {
           <div className="hidden md:flex items-center space-x-8">
             <Link
               href="/events"
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              className="text-gray-700 hover:text-blue-600 transition-colors duration-150 ease-in-out font-medium"
             >
               Events
             </Link>
             <Link
               href="/projects"
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              className="text-gray-700 hover:text-blue-600 transition-colors duration-150 ease-in-out font-medium"
             >
               Projects
             </Link>
@@ -36,7 +36,7 @@ export default function Header() {
           {/* Mobile Menu Button */}
           <button
             type="button"
-            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 transition-colors"
+            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 transition-all duration-150 ease-in-out min-h-[44px] min-w-[44px]"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-expanded={mobileMenuOpen}
             aria-label="Toggle navigation menu"
@@ -67,18 +67,18 @@ export default function Header() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200">
+          <div className="md:hidden py-4 border-t border-gray-200 animate-fadeIn">
             <div className="flex flex-col space-y-4">
               <Link
                 href="/events"
-                className="text-gray-700 hover:text-blue-600 transition-colors font-medium px-2 py-1"
+                className="text-gray-700 hover:text-blue-600 transition-colors duration-150 ease-in-out font-medium px-2 py-2 min-h-[44px] flex items-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Events
               </Link>
               <Link
                 href="/projects"
-                className="text-gray-700 hover:text-blue-600 transition-colors font-medium px-2 py-1"
+                className="text-gray-700 hover:text-blue-600 transition-colors duration-150 ease-in-out font-medium px-2 py-2 min-h-[44px] flex items-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Projects

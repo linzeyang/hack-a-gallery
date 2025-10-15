@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900">
+    <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900" aria-label="Hero section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-32">
         <div className="text-center">
           {/* Badge */}
@@ -43,18 +43,18 @@ export default function Hero() {
           </div>
 
           {/* Stats or Social Proof (Optional) */}
-          <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+          <div className="mt-16 grid grid-cols-3 gap-4 sm:gap-8 max-w-2xl mx-auto" role="region" aria-label="Platform statistics">
             <div>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">1000+</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Projects</div>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white" aria-label="Over 1000 projects">1000+</div>
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Projects</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">50+</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Hackathons</div>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white" aria-label="Over 50 hackathons">50+</div>
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Hackathons</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">5000+</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Hackers</div>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white" aria-label="Over 5000 hackers">5000+</div>
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Hackers</div>
             </div>
           </div>
         </div>

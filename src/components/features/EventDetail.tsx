@@ -27,42 +27,42 @@ export const EventDetail: React.FC<EventDetailProps> = ({ event, projects }) => 
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Back Button */}
-      <Button variant="outline" onClick={() => router.push('/events')}>
+      <Button variant="outline" onClick={() => router.push('/events')} className="text-sm sm:text-base">
         ← Back to Events
       </Button>
 
       {/* Event Header */}
-      <div className="relative h-64 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg overflow-hidden">
+      <div className="relative h-48 sm:h-56 md:h-64 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white p-8">
-            <h1 className="text-4xl font-bold mb-4">{event.name}</h1>
-            <p className="text-xl opacity-90">{event.location}</p>
+          <div className="text-center text-white p-4 sm:p-6 md:p-8">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-4 break-words px-2">{event.name}</h1>
+            <p className="text-base sm:text-lg md:text-xl opacity-90">{event.location}</p>
           </div>
         </div>
       </div>
 
       {/* Event Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           <Card>
-            <CardHeader>
-              <h2 className="text-2xl font-bold">About This Event</h2>
+            <CardHeader className="p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-bold">About This Event</h2>
             </CardHeader>
-            <CardBody>
-              <p className="text-gray-700 whitespace-pre-wrap">{event.description}</p>
+            <CardBody className="p-4 sm:p-6">
+              <p className="text-sm sm:text-base text-gray-700 whitespace-pre-wrap">{event.description}</p>
             </CardBody>
           </Card>
 
           {event.requirements && (
             <Card>
-              <CardHeader>
-                <h2 className="text-2xl font-bold">Requirements</h2>
+              <CardHeader className="p-4 sm:p-6">
+                <h2 className="text-xl sm:text-2xl font-bold">Requirements</h2>
               </CardHeader>
-              <CardBody>
-                <p className="text-gray-700 whitespace-pre-wrap">{event.requirements}</p>
+              <CardBody className="p-4 sm:p-6">
+                <p className="text-sm sm:text-base text-gray-700 whitespace-pre-wrap">{event.requirements}</p>
               </CardBody>
             </Card>
           )}
@@ -70,26 +70,26 @@ export const EventDetail: React.FC<EventDetailProps> = ({ event, projects }) => 
           {/* Prizes */}
           {event.prizes.length > 0 && (
             <Card>
-              <CardHeader>
-                <h2 className="text-2xl font-bold">Prizes</h2>
+              <CardHeader className="p-4 sm:p-6">
+                <h2 className="text-xl sm:text-2xl font-bold">Prizes</h2>
               </CardHeader>
-              <CardBody>
-                <div className="space-y-4">
+              <CardBody className="p-4 sm:p-6">
+                <div className="space-y-3 sm:space-y-4">
                   {event.prizes.map((prize, index) => (
                     <div
                       key={index}
-                      className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200"
+                      className="p-3 sm:p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200 transition-all duration-150 ease-in-out hover:shadow-md"
                     >
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                           {prize.title}
                         </h3>
-                        <span className="text-xl font-bold text-orange-600">
+                        <span className="text-lg sm:text-xl font-bold text-orange-600 flex-shrink-0">
                           {prize.amount}
                         </span>
                       </div>
                       {prize.description && (
-                        <p className="text-gray-700">{prize.description}</p>
+                        <p className="text-sm sm:text-base text-gray-700">{prize.description}</p>
                       )}
                     </div>
                   ))}
@@ -100,12 +100,12 @@ export const EventDetail: React.FC<EventDetailProps> = ({ event, projects }) => 
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <Card>
-            <CardHeader>
-              <h2 className="text-xl font-bold">Event Details</h2>
+            <CardHeader className="p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-bold">Event Details</h2>
             </CardHeader>
-            <CardBody className="space-y-4">
+            <CardBody className="space-y-3 sm:space-y-4 p-4 sm:p-6">
               <div>
                 <div className="flex items-center text-gray-600 mb-1">
                   <svg
@@ -198,6 +198,7 @@ export const EventDetail: React.FC<EventDetailProps> = ({ event, projects }) => 
             variant="primary"
             className="w-full"
             onClick={() => router.push(`/projects/submit?eventId=${event.id}`)}
+            aria-label={`Submit a project for ${event.name}`}
           >
             Submit Project
           </Button>
@@ -206,7 +207,7 @@ export const EventDetail: React.FC<EventDetailProps> = ({ event, projects }) => 
 
       {/* Projects Section */}
       <div>
-        <h2 className="text-3xl font-bold mb-6">Submitted Projects</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Submitted Projects</h2>
         {projects.length === 0 ? (
           <EmptyState
             title="No Projects Yet"
@@ -215,7 +216,7 @@ export const EventDetail: React.FC<EventDetailProps> = ({ event, projects }) => 
             onAction={() => router.push(`/projects/submit?eventId=${event.id}`)}
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {projects.map((project) => (
               <Card
                 key={project.id}
@@ -223,16 +224,16 @@ export const EventDetail: React.FC<EventDetailProps> = ({ event, projects }) => 
                 className="cursor-pointer"
                 onClick={() => router.push(`/projects/${project.id}`)}
               >
-                <CardBody>
-                  <h3 className="text-xl font-bold mb-2">{project.name}</h3>
-                  <p className="text-gray-700 mb-4 line-clamp-3">
+                <CardBody className="p-4 sm:p-6">
+                  <h3 className="text-lg sm:text-xl font-bold mb-2">{project.name}</h3>
+                  <p className="text-sm sm:text-base text-gray-700 mb-4 line-clamp-3">
                     {project.description}
                   </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {project.technologies.slice(0, 3).map((tech, index) => (
                       <span
                         key={index}
-                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full transition-colors duration-150 ease-in-out"
                       >
                         {tech}
                       </span>

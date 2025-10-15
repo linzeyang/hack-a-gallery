@@ -21,13 +21,13 @@ export default function Footer() {
           <div className="flex items-center space-x-6">
             <Link
               href="/events"
-              className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
+              className="text-gray-600 hover:text-blue-600 transition-colors duration-150 ease-in-out text-sm"
             >
               Events
             </Link>
             <Link
               href="/projects"
-              className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
+              className="text-gray-600 hover:text-blue-600 transition-colors duration-150 ease-in-out text-sm"
             >
               Projects
             </Link>
@@ -35,7 +35,7 @@ export default function Footer() {
               href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
+              className="text-gray-600 hover:text-blue-600 transition-colors duration-150 ease-in-out text-sm"
             >
               GitHub
             </a>

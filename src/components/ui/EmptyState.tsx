@@ -17,9 +17,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   icon,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+    <div className="flex flex-col items-center justify-center py-12 px-4 text-center" role="status" aria-live="polite">
       {icon && (
-        <div className="mb-4 text-gray-400">
+        <div className="mb-4 text-gray-400" aria-hidden="true">
           {icon}
         </div>
       )}
@@ -31,6 +31,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           stroke="currentColor"
           viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
         >
           <path
             strokeLinecap="round"
@@ -41,18 +42,18 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         </svg>
       )}
       
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
         {title}
       </h3>
       
       {description && (
-        <p className="text-gray-600 mb-6 max-w-md">
+        <p className="text-sm sm:text-base text-gray-600 mb-6 max-w-md">
           {description}
         </p>
       )}
       
       {actionLabel && onAction && (
-        <Button onClick={onAction} variant="primary">
+        <Button onClick={onAction} variant="primary" aria-label={actionLabel}>
           {actionLabel}
         </Button>
       )}
