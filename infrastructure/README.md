@@ -2,6 +2,24 @@
 
 This directory contains infrastructure-as-code templates for deploying HackaGallery's DynamoDB resources.
 
+## Quick Start
+
+Deploy the DynamoDB table using the automated deployment script:
+
+```bash
+# Deploy to development environment
+npm run deploy:cloudformation dev us-east-1
+
+# Deploy to production environment
+npm run deploy:cloudformation prod us-east-1
+```
+
+The script will:
+- Create or update the CloudFormation stack
+- Wait for deployment to complete
+- Display table name and ARN
+- Provide environment variable configuration
+
 ## CloudFormation Template
 
 The `cloudformation/dynamodb-table.yaml` template creates:
@@ -14,6 +32,27 @@ The `cloudformation/dynamodb-table.yaml` template creates:
 - Point-in-time recovery enabled
 
 ### Deploying the CloudFormation Stack
+
+#### Using the Deployment Script (Recommended)
+
+```bash
+# Syntax: npm run deploy:cloudformation [environment] [region]
+
+# Deploy to development
+npm run deploy:cloudformation dev us-east-1
+
+# Deploy to staging
+npm run deploy:cloudformation staging us-west-2
+
+# Deploy to production
+npm run deploy:cloudformation prod us-east-1
+```
+
+The deployment script (`scripts/deploy-cloudformation.js`) provides:
+- Automatic stack creation or update detection
+- Progress monitoring with status updates
+- Formatted output of table name and ARN
+- Error handling with helpful troubleshooting tips
 
 #### Using AWS CLI
 
@@ -69,56 +108,26 @@ aws cloudformation delete-stack \
   --region us-west-2
 ```
 
-## IAM Policies
+## IAM Configuration
 
-### Application Access Policy
+After deploying the DynamoDB table, you need to configure IAM permissions for your application to access it.
 
-The application needs the following DynamoDB permissions:
+**📖 See [iam/README.md](./iam/README.md) for detailed setup instructions for:**
+- AWS Amplify (using IAM compute roles)
+- Vercel (using IAM users with access keys)
+- Netlify (using IAM users with access keys)
 
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "DynamoDBTableAccess",
-      "Effect": "Allow",
-      "Action": [
-        "dynamodb:GetItem",
-        "dynamodb:PutItem",
-        "dynamodb:UpdateItem",
-        "dynamodb:DeleteItem",
-        "dynamodb:Query",
-        "dynamodb:Scan",
-        "dynamodb:BatchGetItem",
-        "dynamodb:BatchWriteItem"
-      ],
-      "Resource": [
-        "arn:aws:dynamodb:*:*:table/hackagallery-*"
-      ]
-    }
-  ]
-}
-```
+### Quick Reference
 
-### AWS Amplify Setup
+**IAM Policy Document**: `iam/dynamodb-access-policy.json`
 
-1. Deploy the CloudFormation stack
-2. Go to AWS Amplify console
-3. Select your app → App settings → Environment variables
-4. Add `DYNAMODB_TABLE_NAME` with the table name from stack outputs
-5. Go to App settings → Compute → Edit compute settings
-6. Attach the IAM policy above to the compute role
+**AWS Amplify**: Attach the policy to your Amplify compute role
 
-### Vercel/Netlify Setup
-
-1. Deploy the CloudFormation stack
-2. Create an IAM user with the policy above
-3. Generate access keys for the user
-4. Add environment variables in your platform:
-   - `DYNAMODB_TABLE_NAME`: Table name from stack outputs
-   - `AWS_REGION`: us-west-2 (or your region)
-   - `AWS_ACCESS_KEY_ID`: IAM user access key
-   - `AWS_SECRET_ACCESS_KEY`: IAM user secret key
+**Vercel/Netlify**: Create an IAM user, attach the policy, and configure environment variables:
+- `DYNAMODB_TABLE_NAME`: Table name from stack outputs
+- `AWS_REGION`: Your deployment region
+- `AWS_ACCESS_KEY_ID`: IAM user access key
+- `AWS_SECRET_ACCESS_KEY`: IAM user secret key
 
 ## Cost Estimation
 
