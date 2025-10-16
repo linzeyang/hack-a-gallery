@@ -71,6 +71,8 @@ export class DynamoDBAdapter implements IStorageAdapter {
    */
   async get<T>(key: string): Promise<T | null> {
     try {
+      this.log("info", `Getting item with key: ${key}`);
+
       // Parse key into PK and SK
       const { PK, SK } = this.parseKey(key);
 
@@ -86,6 +88,7 @@ export class DynamoDBAdapter implements IStorageAdapter {
 
       // Return item or null if not found
       if (!result.Item) {
+        this.log("info", `Item not found with key: ${key}`, { PK, SK });
         return null;
       }
 
@@ -99,9 +102,17 @@ export class DynamoDBAdapter implements IStorageAdapter {
       delete item.GSI2SK;
       delete item.entityType;
 
+      this.log("info", `Successfully retrieved item with key: ${key}`, {
+        PK,
+        SK,
+      });
+
       return item as T;
     } catch (error) {
-      this.log("error", `Failed to get item with key: ${key}`, { error });
+      this.log("error", `Failed to get item with key: ${key}`, {
+        error,
+        operation: "get",
+      });
       throw error;
     }
   }
@@ -114,6 +125,8 @@ export class DynamoDBAdapter implements IStorageAdapter {
    */
   async set<T>(key: string, value: T): Promise<void> {
     try {
+      this.log("info", `Storing item with key: ${key}`);
+
       // Parse key into PK and SK
       const { PK, SK } = this.parseKey(key);
 
@@ -152,6 +165,15 @@ export class DynamoDBAdapter implements IStorageAdapter {
         ...item,
       };
 
+      this.log("info", `Executing PutCommand for key: ${key}`, {
+        PK,
+        SK,
+        entityType,
+        isUpdate,
+        hasGSI1: !!gsiKeys.GSI1PK,
+        hasGSI2: !!gsiKeys.GSI2PK,
+      });
+
       // Execute PutCommand with retry logic
       await this.executeWithRetry(async () => {
         const command = new PutCommand({
@@ -163,11 +185,16 @@ export class DynamoDBAdapter implements IStorageAdapter {
       });
 
       this.log("info", `Successfully stored item with key: ${key}`, {
+        PK,
+        SK,
         entityType,
         isUpdate,
       });
     } catch (error) {
-      this.log("error", `Failed to store item with key: ${key}`, { error });
+      this.log("error", `Failed to store item with key: ${key}`, {
+        error,
+        operation: "set",
+      });
       throw error;
     }
   }
@@ -179,6 +206,8 @@ export class DynamoDBAdapter implements IStorageAdapter {
    */
   async remove(key: string): Promise<void> {
     try {
+      this.log("info", `Removing item with key: ${key}`);
+
       // Parse key into PK and SK
       const { PK, SK } = this.parseKey(key);
 
@@ -192,9 +221,15 @@ export class DynamoDBAdapter implements IStorageAdapter {
         await this.docClient.send(command);
       });
 
-      this.log("info", `Successfully removed item with key: ${key}`);
+      this.log("info", `Successfully removed item with key: ${key}`, {
+        PK,
+        SK,
+      });
     } catch (error) {
-      this.log("error", `Failed to remove item with key: ${key}`, { error });
+      this.log("error", `Failed to remove item with key: ${key}`, {
+        error,
+        operation: "remove",
+      });
       throw error;
     }
   }
@@ -279,6 +314,8 @@ export class DynamoDBAdapter implements IStorageAdapter {
    */
   async getAll<T>(prefix: string): Promise<T[]> {
     try {
+      this.log("info", `Getting all items with prefix: ${prefix}`);
+
       const items: T[] = [];
 
       // Determine query strategy based on prefix
@@ -311,6 +348,12 @@ export class DynamoDBAdapter implements IStorageAdapter {
             throw new Error(`Unknown entity type: "${entityType}"`);
         }
 
+        this.log("info", `Using Scan strategy for entity-level query`, {
+          prefix,
+          pkPrefix,
+          entityType,
+        });
+
         // Use Scan with begins_with filter
         await this.scanWithPagination(pkPrefix, "METADATA", items);
       }
@@ -321,6 +364,13 @@ export class DynamoDBAdapter implements IStorageAdapter {
           const eventId = parts[1];
           const PK = `EVENT#${eventId}`;
           const skPrefix = "PROJECT#";
+
+          this.log("info", `Using Query strategy for parent-child query`, {
+            prefix,
+            PK,
+            skPrefix,
+            entityType,
+          });
 
           // Use Query with PK and SK begins_with
           await this.queryWithPagination(PK, skPrefix, items);
@@ -335,12 +385,17 @@ export class DynamoDBAdapter implements IStorageAdapter {
 
       this.log(
         "info",
-        `Retrieved ${items.length} items with prefix: ${prefix}`
+        `Retrieved ${items.length} items with prefix: ${prefix}`,
+        {
+          itemCount: items.length,
+          entityType,
+        }
       );
       return items;
     } catch (error) {
       this.log("error", `Failed to get all items with prefix: ${prefix}`, {
         error,
+        operation: "getAll",
       });
       throw error;
     }
@@ -541,15 +596,37 @@ export class DynamoDBAdapter implements IStorageAdapter {
 
         // Check if error is retryable
         const errorName = (error as { name?: string }).name;
+        const errorMessage = (error as { message?: string }).message;
         const isRetryable =
           errorName === "ProvisionedThroughputExceededException" ||
           errorName === "ThrottlingException" ||
           errorName === "RequestLimitExceeded" ||
           errorName === "ServiceUnavailable" ||
-          errorName === "InternalServerError";
+          errorName === "InternalServerError" ||
+          errorName === "NetworkingError" ||
+          errorName === "TimeoutError";
+
+        // Log the error with context
+        this.log(
+          "warn",
+          `DynamoDB operation failed on attempt ${attempt + 1}`,
+          {
+            attempt: attempt + 1,
+            maxRetries,
+            errorName,
+            errorMessage,
+            isRetryable,
+            stack: lastError.stack,
+          }
+        );
 
         // Don't retry on non-retryable errors
         if (!isRetryable) {
+          this.log("error", "Non-retryable error encountered", {
+            errorName,
+            errorMessage,
+            stack: lastError.stack,
+          });
           throw error;
         }
 
@@ -557,10 +634,11 @@ export class DynamoDBAdapter implements IStorageAdapter {
         if (attempt < maxRetries - 1) {
           // Exponential backoff: 100ms, 200ms, 400ms
           const delay = 100 * Math.pow(2, attempt);
-          this.log("warn", `Retrying operation after ${delay}ms`, {
+          this.log("info", `Retrying operation after ${delay}ms`, {
             attempt: attempt + 1,
             maxRetries,
-            error: errorName,
+            delay,
+            errorName,
           });
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
@@ -570,7 +648,9 @@ export class DynamoDBAdapter implements IStorageAdapter {
     // All retries exhausted
     this.log("error", "All retry attempts exhausted", {
       maxRetries,
-      error: lastError,
+      errorName: lastError?.name,
+      errorMessage: lastError?.message,
+      stack: lastError?.stack,
     });
     throw lastError!;
   }
@@ -674,30 +754,51 @@ export class DynamoDBAdapter implements IStorageAdapter {
   /**
    * Log a message with structured context
    *
+   * Provides structured logging with consistent format for monitoring and debugging.
+   * All logs include timestamp, level, adapter name, table name, and optional metadata.
+   *
    * @param level - Log level (info, warn, error)
    * @param message - Log message
-   * @param meta - Additional metadata
+   * @param meta - Additional metadata (errors, operation context, etc.)
    */
   private log(
     level: "info" | "warn" | "error",
     message: string,
     meta?: Record<string, unknown>
   ): void {
-    const logEntry = {
+    const logEntry: Record<string, unknown> = {
       timestamp: new Date().toISOString(),
       level,
       message,
       adapter: "DynamoDBAdapter",
       tableName: this.tableName,
-      ...meta,
     };
 
+    // Add metadata if provided
+    if (meta) {
+      // Handle Error objects specially to extract useful information
+      if (meta.error && meta.error instanceof Error) {
+        logEntry.error = {
+          name: meta.error.name,
+          message: meta.error.message,
+          stack: meta.error.stack,
+        };
+        // Remove the original error object to avoid circular references
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { error, ...restMeta } = meta;
+        Object.assign(logEntry, restMeta);
+      } else {
+        Object.assign(logEntry, meta);
+      }
+    }
+
+    // Output to appropriate console method based on level
     if (level === "error") {
-      console.error(JSON.stringify(logEntry));
+      console.error(JSON.stringify(logEntry, null, 2));
     } else if (level === "warn") {
-      console.warn(JSON.stringify(logEntry));
+      console.warn(JSON.stringify(logEntry, null, 2));
     } else {
-      console.log(JSON.stringify(logEntry));
+      console.log(JSON.stringify(logEntry, null, 2));
     }
   }
 }
