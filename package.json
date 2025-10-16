@@ -7,6 +7,9 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
     "setup:dynamodb-local": "node scripts/setup-dynamodb-local.js",
     "dynamodb:start": "node scripts/start-dynamodb-local.js",
     "dynamodb:stop": "node scripts/stop-dynamodb-local.js",
@@ -26,10 +29,12 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/ui": "^3.2.4",
     "dynamodb-local": "^0.0.35",
     "eslint": "^9",
     "eslint-config-next": "15.5.5",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.4"
   }
 }
