@@ -1,16 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Configure for static export to AWS Amplify
-  output: 'export',
-  
-  // Image optimization configuration for static export
-  // Static export doesn't support Next.js Image Optimization API
-  // Images will be served as-is without optimization
+  // SSR enabled - removed static export configuration
+  // This enables Server-Side Rendering for improved SEO and performance
+
+  // Image optimization configuration for SSR
+  // Now supports Next.js Image Optimization API
   images: {
-    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.amazonaws.com",
+      },
+    ],
   },
-  
+
   // Disable trailing slashes for cleaner URLs
   trailingSlash: false,
 };

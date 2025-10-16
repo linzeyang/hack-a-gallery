@@ -1,23 +1,40 @@
 /**
- * Event Detail Page - Server Component Wrapper
- * 
- * This is a Server Component that handles static export configuration
- * and renders the Client Component for actual data fetching.
- * 
- * For static export with dynamic routes, we need generateStaticParams
- * but can't use it in client components. This wrapper solves that.
+ * Event Detail Page - Server Component
+ *
+ * This is now a Server Component that fetches data during SSR.
+ * Benefits:
+ * - Improved SEO with fully rendered HTML
+ * - Faster initial page load
+ * - Data fetched on the server using DynamoDB
  */
 
-import EventDetailClient from './EventDetailClient';
+import { notFound } from "next/navigation";
+import { eventService } from "@/services/eventService";
+import { projectService } from "@/services/projectService";
+import { EventDetail } from "@/components/features";
 
-// Required for static export with dynamic routes
-// Since we use localStorage (Phase 1), we can't pre-render specific IDs at build time
-// We generate a placeholder page - actual data is loaded client-side
-export async function generateStaticParams() {
-  // Return a placeholder - actual routes are handled client-side
-  return [{ id: 'placeholder' }];
+interface EventDetailPageProps {
+  params: {
+    id: string;
+  };
 }
 
-export default function EventDetailPage() {
-  return <EventDetailClient />;
+export default async function EventDetailPage({
+  params,
+}: EventDetailPageProps) {
+  const { id } = params;
+
+  const { data: event, error: eventError } = await eventService.getById(id);
+
+  if (eventError || !event) {
+    notFound();
+  }
+
+  const { data: projects } = await projectService.getByEvent(id);
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <EventDetail event={event} projects={projects || []} />
+    </div>
+  );
 }
