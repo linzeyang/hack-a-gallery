@@ -4,18 +4,6 @@ import { DynamoDBAdapter } from "@/lib/adapters/dynamoDBAdapter";
 import { getAWSConfig } from "@/lib/config/aws";
 
 /**
- * Storage Keys
- *
- * Centralized storage key constants to ensure consistency
- * across the application.
- */
-export const STORAGE_KEYS = {
-  EVENTS: "hackagallery_events",
-  PROJECTS: "hackagallery_projects",
-  CURRENT_USER: "hackagallery_user",
-} as const;
-
-/**
  * Storage Factory
  *
  * Returns the appropriate storage adapter based on environment configuration.

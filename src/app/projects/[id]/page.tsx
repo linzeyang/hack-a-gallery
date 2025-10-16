@@ -15,15 +15,15 @@ import { eventService } from "@/services/eventService";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 
 interface ProjectDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function ProjectDetailPage({
   params,
 }: ProjectDetailPageProps) {
-  const { id } = params;
+  const { id } = await params;
 
   const projectResponse = await projectService.getById(id);
 

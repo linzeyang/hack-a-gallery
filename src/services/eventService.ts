@@ -1,13 +1,17 @@
 import type { IEventService, ServiceResponse } from '@/lib/types/service';
 import type { Event } from '@/lib/types/event';
-import { getStorageAdapter, STORAGE_KEYS } from '@/lib/utils/storage';
+import { getStorageAdapter } from '@/lib/utils/storage';
 
 /**
  * Event Service Implementation
  * 
  * Provides CRUD operations for hackathon events using the storage adapter pattern.
- * This service is agnostic to the storage implementation (localStorage, API, AWS, etc.)
+ * This service is agnostic to the storage implementation (localStorage, DynamoDB, etc.)
  * and can be easily migrated by changing only the storage adapter.
+ * 
+ * DynamoDB Key Pattern:
+ * - Individual event: "event:eventId" → PK: "EVENT#eventId", SK: "METADATA"
+ * - All events: "event:" prefix for getAll() operation
  * 
  * All operations return ServiceResponse for consistent error handling.
  */
@@ -16,11 +20,14 @@ class EventService implements IEventService {
 
   /**
    * Get all non-hidden events
+   * 
+   * Uses DynamoDB Query with "event:" prefix to retrieve all events.
+   * The adapter will use Scan with filter: begins_with(PK, "EVENT#") AND SK = "METADATA"
    */
   async getAll(): Promise<ServiceResponse<Event[]>> {
     try {
-      const events = await this.storage.get<Event[]>(STORAGE_KEYS.EVENTS);
-      const filteredEvents = (events || []).filter((e) => !e.isHidden);
+      const events = await this.storage.getAll<Event>('event:');
+      const filteredEvents = events.filter((e) => !e.isHidden);
       return {
         success: true,
         data: filteredEvents,
@@ -35,11 +42,13 @@ class EventService implements IEventService {
 
   /**
    * Get event by ID
+   * 
+   * Uses DynamoDB GetCommand with key "event:eventId"
+   * Maps to PK: "EVENT#eventId", SK: "METADATA"
    */
   async getById(id: string): Promise<ServiceResponse<Event>> {
     try {
-      const events = await this.storage.get<Event[]>(STORAGE_KEYS.EVENTS);
-      const event = (events || []).find((e) => e.id === id);
+      const event = await this.storage.get<Event>(`event:${id}`);
 
       if (!event) {
         return {
@@ -62,14 +71,17 @@ class EventService implements IEventService {
 
   /**
    * Create a new event
+   * 
+   * Uses DynamoDB PutCommand with key "event:eventId"
+   * The adapter will:
+   * - Map to PK: "EVENT#eventId", SK: "METADATA"
+   * - Add GSI1 keys: GSI1PK: "ORGANIZER#organizerId", GSI1SK: "EVENT#eventId"
+   * - Add timestamps: createdAt, updatedAt
    */
   async create(
     eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>
   ): Promise<ServiceResponse<Event>> {
     try {
-      const events = await this.storage.get<Event[]>(STORAGE_KEYS.EVENTS);
-      const existingEvents = events || [];
-
       const newEvent: Event = {
         ...eventData,
         id: this.generateId(),
@@ -77,8 +89,7 @@ class EventService implements IEventService {
         updatedAt: new Date().toISOString(),
       };
 
-      const updatedEvents = [...existingEvents, newEvent];
-      await this.storage.set(STORAGE_KEYS.EVENTS, updatedEvents);
+      await this.storage.set(`event:${newEvent.id}`, newEvent);
 
       return {
         success: true,
@@ -94,15 +105,15 @@ class EventService implements IEventService {
 
   /**
    * Update an existing event
+   * 
+   * Uses DynamoDB GetCommand followed by PutCommand
+   * The adapter will automatically update the updatedAt timestamp
    */
   async update(id: string, eventData: Partial<Event>): Promise<ServiceResponse<Event>> {
     try {
-      const events = await this.storage.get<Event[]>(STORAGE_KEYS.EVENTS);
-      const existingEvents = events || [];
+      const existingEvent = await this.storage.get<Event>(`event:${id}`);
 
-      const eventIndex = existingEvents.findIndex((e) => e.id === id);
-
-      if (eventIndex === -1) {
+      if (!existingEvent) {
         return {
           success: false,
           error: 'Event not found',
@@ -110,14 +121,13 @@ class EventService implements IEventService {
       }
 
       const updatedEvent: Event = {
-        ...existingEvents[eventIndex],
+        ...existingEvent,
         ...eventData,
         id, // Ensure ID doesn't change
         updatedAt: new Date().toISOString(),
       };
 
-      existingEvents[eventIndex] = updatedEvent;
-      await this.storage.set(STORAGE_KEYS.EVENTS, existingEvents);
+      await this.storage.set(`event:${id}`, updatedEvent);
 
       return {
         success: true,
@@ -158,11 +168,17 @@ class EventService implements IEventService {
 
   /**
    * Get all events by organizer ID
+   * 
+   * Uses DynamoDB Query with "event:" prefix and filters by organizerId
+   * In the future, this could be optimized to use GSI1 with:
+   * GSI1PK: "ORGANIZER#organizerId", GSI1SK begins_with "EVENT#"
+   * 
+   * For now, we retrieve all events and filter client-side for simplicity.
    */
   async getByOrganizer(organizerId: string): Promise<ServiceResponse<Event[]>> {
     try {
-      const events = await this.storage.get<Event[]>(STORAGE_KEYS.EVENTS);
-      const organizerEvents = (events || []).filter((e) => e.organizerId === organizerId);
+      const events = await this.storage.getAll<Event>('event:');
+      const organizerEvents = events.filter((e) => e.organizerId === organizerId);
 
       return {
         success: true,

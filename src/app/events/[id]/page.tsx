@@ -14,15 +14,15 @@ import { projectService } from "@/services/projectService";
 import { EventDetail } from "@/components/features";
 
 interface EventDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function EventDetailPage({
   params,
 }: EventDetailPageProps) {
-  const { id } = params;
+  const { id } = await params;
 
   const { data: event, error: eventError } = await eventService.getById(id);
 
