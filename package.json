@@ -16,7 +16,8 @@
     "seed:local": "node scripts/seed-local-data.js",
     "seed:aws": "node scripts/seed-aws-data.js",
     "deploy:cloudformation": "node scripts/deploy-cloudformation.js",
-    "test:health": "node scripts/test-health-endpoint.js"
+    "test:health": "node scripts/test-health-endpoint.js",
+    "test:performance": "node scripts/test-cold-start-performance.js"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.709.0",

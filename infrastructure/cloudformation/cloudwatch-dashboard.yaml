@@ -1,0 +1,137 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudWatch Dashboard for HackaGallery DynamoDB Monitoring
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Environment name (dev, staging, or prod)
+  
+  TableName:
+    Type: String
+    Default: hackagallery-prod
+    Description: DynamoDB table name to monitor
+
+Resources:
+  HackaGalleryDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub 'HackaGallery-DynamoDB-${Environment}'
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  ["AWS/DynamoDB", "ConsumedReadCapacityUnits", {"stat": "Sum", "label": "Read Capacity Units"}],
+                  [".", "ConsumedWriteCapacityUnits", {"stat": "Sum", "label": "Write Capacity Units"}]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "Consumed Capacity Units (5min)",
+                "period": 300,
+                "yAxis": {
+                  "left": {
+                    "label": "Units",
+                    "showUnits": false
+                  }
+                },
+                "annotations": {
+                  "horizontal": [
+                    {
+                      "label": "High Usage Threshold",
+                      "value": 1000,
+                      "fill": "above",
+                      "color": "#ff7f0e"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "metric",
+              "x": 12,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  ["AWS/DynamoDB", "SuccessfulRequestLatency", {"stat": "Average", "label": "Average Latency"}],
+                  ["...", {"stat": "p99", "label": "p99 Latency"}],
+                  ["...", {"stat": "p50", "label": "p50 Latency"}]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "Request Latency (ms)",
+                "period": 300,
+                "yAxis": {
+                  "left": {
+                    "label": "Milliseconds",
+                    "showUnits": false,
+                    "min": 0
+                  }
+                },
+                "annotations": {
+                  "horizontal": [
+                    {
+                      "label": "Target p99 < 100ms",
+                      "value": 100,
+                      "fill": "above",
+                      "color": "#d62728"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 6,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  ["AWS/DynamoDB", "UserErrors", {"stat": "Sum", "label": "User Errors (4xx)", "color": "#ff7f0e"}],
+                  [".", "SystemErrors", {"stat": "Sum", "label": "System Errors (5xx)", "color": "#d62728"}],
+                  [".", "ThrottledRequests", {"stat": "Sum", "label": "Throttled Requests", "color": "#9467bd"}]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "Errors and Throttling",
+                "period": 300,
+                "yAxis": {
+                  "left": {
+                    "label": "Count",
+                    "showUnits": false,
+                    "min": 0
+                  }
+                }
+              }
+            }
+          ]
+        }
+
+Outputs:
+  DashboardName:
+    Description: Name of the CloudWatch Dashboard
+    Value: !Ref HackaGalleryDashboard
+    Export:
+      Name: !Sub '${AWS::StackName}-DashboardName'
+  
+  DashboardURL:
+    Description: URL to the CloudWatch Dashboard
+    Value: !Sub 'https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=${HackaGalleryDashboard}'
+    Export:
+      Name: !Sub '${AWS::StackName}-DashboardURL'
