@@ -32,7 +32,7 @@ describe("AWS Configuration Module", () => {
 
   describe("getAWSConfig", () => {
     describe("region configuration", () => {
-      it("should use default region (us-east-1) when not specified", () => {
+      it("should use default region (us-west-2) when not specified", () => {
         // Arrange
         process.env.DYNAMODB_TABLE_NAME = "test-table";
 
@@ -40,7 +40,7 @@ describe("AWS Configuration Module", () => {
         const config = getAWSConfig();
 
         // Assert
-        expect(config.region).toBe("us-east-1");
+        expect(config.region).toBe("us-west-2");
         expect(config.tableName).toBe("test-table");
         expect(config.endpoint).toBeUndefined();
       });
@@ -109,7 +109,7 @@ describe("AWS Configuration Module", () => {
 
   describe("getDynamoDBClient", () => {
     const createTestConfig = (overrides?: Partial<AWSConfig>): AWSConfig => ({
-      region: "us-east-1",
+      region: "us-west-2",
       tableName: "test-table",
       ...overrides,
     });
@@ -154,7 +154,7 @@ describe("AWS Configuration Module", () => {
 
   describe("getDocumentClient", () => {
     const createTestConfig = (overrides?: Partial<AWSConfig>): AWSConfig => ({
-      region: "us-east-1",
+      region: "us-west-2",
       tableName: "test-table",
       ...overrides,
     });
@@ -187,7 +187,7 @@ describe("AWS Configuration Module", () => {
     it("should clear singleton instances for fresh client creation", () => {
       // Arrange
       const config: AWSConfig = {
-        region: "us-east-1",
+        region: "us-west-2",
         tableName: "test-table",
       };
       const client1 = getDynamoDBClient(config);
