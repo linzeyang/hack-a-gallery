@@ -17,7 +17,9 @@ export interface AWSConfig {
  * Retrieves AWS configuration from environment variables with validation and fallbacks.
  *
  * Environment Variables:
- * - AWS_REGION or NEXT_PUBLIC_AWS_REGION: AWS region (default: us-east-1)
+ * - HACKAGALLERY_AWS_REGION: AWS region (for Vercel and Netlify, since AWS_* is reserved)
+ * - AWS_REGION: AWS region (for other platforms)
+ * - NEXT_PUBLIC_AWS_REGION: AWS region (client-side fallback)
  * - DYNAMODB_TABLE_NAME or NEXT_PUBLIC_DYNAMODB_TABLE_NAME: DynamoDB table name (required)
  * - DYNAMODB_ENDPOINT or NEXT_PUBLIC_DYNAMODB_ENDPOINT: Local DynamoDB endpoint (optional)
  *
@@ -25,9 +27,13 @@ export interface AWSConfig {
  * @returns {AWSConfig} Validated AWS configuration object
  */
 export function getAWSConfig(): AWSConfig {
-  // Read region with fallback to us-east-1
+  // Read region with custom prefix for Vercel and Netlify compatibility
+  // Vercel and Netlify reserves AWS_REGION, so we check HACKAGALLERY_AWS_REGION first
   const region =
-    process.env.AWS_REGION || process.env.NEXT_PUBLIC_AWS_REGION || "us-west-2";
+    process.env.HACKAGALLERY_AWS_REGION ||
+    process.env.AWS_REGION ||
+    process.env.NEXT_PUBLIC_AWS_REGION ||
+    "us-west-2";
 
   // Read table name (required)
   const tableName =
