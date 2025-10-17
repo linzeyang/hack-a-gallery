@@ -6,6 +6,9 @@ frontend:
         - npm ci
     build:
       commands:
+        - echo "Building with DYNAMODB_TABLE_NAME=$DYNAMODB_TABLE_NAME"
+        - echo "DYNAMODB_TABLE_NAME=$DYNAMODB_TABLE_NAME" >> .env.production
+        - echo "HACKAGALLERY_AWS_REGION=$HACKAGALLERY_AWS_REGION" >> .env.production
         - npm run build
   artifacts:
     baseDirectory: .next
