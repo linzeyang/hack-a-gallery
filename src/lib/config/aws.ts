@@ -27,7 +27,7 @@ export interface AWSConfig {
 export function getAWSConfig(): AWSConfig {
   // Read region with fallback to us-east-1
   const region =
-    process.env.AWS_REGION || process.env.NEXT_PUBLIC_AWS_REGION || "us-east-1";
+    process.env.AWS_REGION || process.env.NEXT_PUBLIC_AWS_REGION || "us-west-2";
 
   // Read table name (required)
   const tableName =
@@ -83,9 +83,12 @@ let documentClient: DynamoDBDocumentClient | null = null;
  * - Uses AWS SDK default credential provider chain
  *
  * Credential Resolution Order:
- * 1. Environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
- * 2. IAM roles (for AWS Amplify SSR)
- * 3. AWS CLI credentials (~/.aws/credentials)
+ * 1. Custom environment variables (HACKAGALLERY_AWS_ACCESS_KEY_ID, HACKAGALLERY_AWS_SECRET_ACCESS_KEY)
+ *    - Required for Vercel or Netlify deployment (AWS_* vars are reserved)
+ * 2. Standard AWS environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+ *    - For local development and other platforms
+ * 3. IAM roles (for AWS Amplify SSR)
+ * 4. AWS CLI credentials (~/.aws/credentials)
  *
  * @param {AWSConfig} config - AWS configuration object
  * @returns {DynamoDBClient} Singleton DynamoDB client instance
@@ -118,6 +121,21 @@ export function getDynamoDBClient(config: AWSConfig): DynamoDBClient {
           secretAccessKey: "local",
         };
       }
+    } else {
+      // For production deployments, check for custom credential env vars
+      // Vercel and Netlify reserve AWS_*, so we use HACKAGALLERY_* prefix
+      const customAccessKeyId = process.env.HACKAGALLERY_AWS_ACCESS_KEY_ID;
+      const customSecretAccessKey =
+        process.env.HACKAGALLERY_AWS_SECRET_ACCESS_KEY;
+
+      if (customAccessKeyId && customSecretAccessKey) {
+        clientConfig.credentials = {
+          accessKeyId: customAccessKeyId,
+          secretAccessKey: customSecretAccessKey,
+        };
+      }
+      // If custom vars not set, AWS SDK will use default credential chain
+      // (standard AWS_* env vars, IAM roles, or ~/.aws/credentials)
     }
 
     dynamoDBClient = new DynamoDBClient(clientConfig);
