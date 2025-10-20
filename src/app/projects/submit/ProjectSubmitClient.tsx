@@ -1,38 +1,44 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ProjectForm } from '@/components/features/ProjectForm';
-import type { Project } from '@/lib/types/project';
-import type { Event } from '@/lib/types/event';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ProjectFormWithAnalysis } from "@/components/features/ProjectFormWithAnalysis";
+import type { Project } from "@/lib/types/project";
+import type { Event } from "@/lib/types/event";
 
 interface ProjectSubmitClientProps {
   event: Event;
   initialProject?: Project;
 }
 
-export function ProjectSubmitClient({ event, initialProject }: ProjectSubmitClientProps) {
+export function ProjectSubmitClient({
+  event,
+  initialProject,
+}: ProjectSubmitClientProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isEditMode = !!initialProject;
 
-  const handleSubmit = async (data: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleSubmit = async (
+    data: Omit<Project, "id" | "createdAt" | "updatedAt">
+  ) => {
     setIsSubmitting(true);
     setError(null);
 
     try {
-      const url = isEditMode && initialProject 
-        ? `/api/projects/${initialProject.id}` 
-        : '/api/projects';
-      const method = isEditMode ? 'PATCH' : 'POST';
+      const url =
+        isEditMode && initialProject
+          ? `/api/projects/${initialProject.id}`
+          : "/api/projects";
+      const method = isEditMode ? "PATCH" : "POST";
 
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
@@ -43,11 +49,13 @@ export function ProjectSubmitClient({ event, initialProject }: ProjectSubmitClie
         router.push(`/projects/${project.id}`);
       } else {
         const errorData = await response.json();
-        setError(errorData.error || 'Failed to submit project. Please try again.');
+        setError(
+          errorData.error || "Failed to submit project. Please try again."
+        );
         setIsSubmitting(false);
       }
     } catch {
-      setError('An unexpected error occurred. Please try again.');
+      setError("An unexpected error occurred. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -65,8 +73,18 @@ export function ProjectSubmitClient({ event, initialProject }: ProjectSubmitClie
             onClick={handleCancel}
             className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
             Back to Event
           </button>
@@ -75,11 +93,14 @@ export function ProjectSubmitClient({ event, initialProject }: ProjectSubmitClie
         {/* Page Header */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200 p-8 mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {isEditMode ? 'Edit Project' : 'Submit Your Project'}
+            {isEditMode ? "Edit Project" : "Submit Your Project"}
           </h1>
           <p className="text-gray-600">
-            For{' '}
-            <Link href={`/events/${event.id}`} className="text-blue-600 hover:text-blue-800 font-medium">
+            For{" "}
+            <Link
+              href={`/events/${event.id}`}
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
               {event.name}
             </Link>
           </p>
@@ -105,9 +126,9 @@ export function ProjectSubmitClient({ event, initialProject }: ProjectSubmitClie
           </div>
         )}
 
-        {/* Project Form */}
+        {/* Project Form with AI Analysis */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200 p-8">
-          <ProjectForm
+          <ProjectFormWithAnalysis
             eventId={event.id}
             initialData={initialProject}
             onSubmit={handleSubmit}
@@ -118,13 +139,20 @@ export function ProjectSubmitClient({ event, initialProject }: ProjectSubmitClie
 
         {/* Help Text */}
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-blue-900 mb-2">Tips for a great submission:</h3>
+          <h3 className="text-sm font-semibold text-blue-900 mb-2">
+            Enhanced with AI Analysis:
+          </h3>
           <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-            <li>Write a clear, concise description of what your project does</li>
-            <li>Include all technologies and frameworks you used</li>
-            <li>Make sure your GitHub repository is public</li>
-            <li>Add a README with setup instructions</li>
-            <li>Include screenshots or a demo video if possible</li>
+            <li>
+              Use AI analysis to automatically detect technologies and generate
+              descriptions
+            </li>
+            <li>Get intelligent suggestions for project tags and categories</li>
+            <li>Extract key features from your repository automatically</li>
+            <li>
+              Save time with pre-filled form fields based on code analysis
+            </li>
+            <li>Or skip analysis and fill the form manually if you prefer</li>
           </ul>
         </div>
       </div>
