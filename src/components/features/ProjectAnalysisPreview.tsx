@@ -46,19 +46,25 @@ const TechnologyTag: React.FC<{
 const CategoryTag: React.FC<{
   name: string;
   category: string;
-  confidence: number;
+  confidence?: number;
 }> = ({ name, category, confidence }) => {
   const colorClass = getTagColor(category);
 
   return (
     <span
       className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${colorClass}`}
-      title={`${category} • ${Math.round(confidence * 100)}% confidence`}
+      title={
+        confidence !== undefined
+          ? `${category} • ${Math.round(confidence * 100)}% confidence`
+          : category
+      }
     >
       {name}
-      <span className="text-xs opacity-75">
-        {Math.round(confidence * 100)}%
-      </span>
+      {confidence !== undefined && (
+        <span className="text-xs opacity-75">
+          {Math.round(confidence * 100)}%
+        </span>
+      )}
     </span>
   );
 };

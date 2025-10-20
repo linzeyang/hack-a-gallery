@@ -19,8 +19,8 @@ export interface TagItem {
   name: string;
   /** Tag category (e.g., "domain", "type", "feature") */
   category: string;
-  /** Confidence score from 0.0 to 1.0 */
-  confidence: number;
+  /** Confidence score from 0.0 to 1.0 (optional - not all agents return this) */
+  confidence?: number;
 }
 
 export interface AnalysisMetadata {
@@ -126,8 +126,11 @@ export interface AnalysisPreviewProps {
 export interface AnalysisFormProps {
   /** Initial repository URL */
   initialUrl?: string;
-  /** Callback when analysis is completed */
-  onAnalysisComplete?: (analysis: ProjectAnalysis) => void;
+  /** Callback when analysis is completed (includes analysis data and repository URL) */
+  onAnalysisComplete?: (
+    analysis: ProjectAnalysis,
+    repositoryUrl: string
+  ) => void;
   /** Callback when analysis fails */
   onAnalysisError?: (error: ErrorDetail) => void;
   /** Loading state override */

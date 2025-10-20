@@ -40,13 +40,26 @@ export const ProjectFormWithAnalysis: React.FC<
    * Handle successful analysis completion
    */
   const handleAnalysisComplete = useCallback(
-    (analysis: ProjectAnalysis) => {
+    (analysis: ProjectAnalysis, repositoryUrl: string) => {
       setAnalysisData(analysis);
+
+      // Extract repository name from URL for default project name
+      // e.g., "https://github.com/owner/repo-name" -> "repo-name"
+      const repoName = repositoryUrl.split("/").pop()?.replace(/-/g, " ") || "";
+      // Capitalize first letter of each word
+      const projectName =
+        repoName
+          .split(" ")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ") ||
+        initialData?.name ||
+        "";
 
       // Extract data from analysis to enhance project form
       const enhancedData: Partial<Project> = {
         ...initialData,
-        githubUrl: "", // Will be set from the analysis form URL
+        name: projectName, // Set from repository name
+        githubUrl: repositoryUrl, // Set from the analysis form URL
         description: analysis.summary || initialData?.description || "",
         technologies:
           analysis.technologies?.map((tech) => tech.name) ||

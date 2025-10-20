@@ -130,8 +130,8 @@ export const ProjectAnalysisForm: React.FC<AnalysisFormProps> = ({
         const response = await analyzeProject(repositoryUrl.trim());
 
         if (response.success && response.data) {
-          // Analysis successful
-          onAnalysisComplete?.(response.data);
+          // Analysis successful - pass both analysis data and the repository URL
+          onAnalysisComplete?.(response.data, repositoryUrl.trim());
 
           // Reset form state
           setFormState((prev) => ({
