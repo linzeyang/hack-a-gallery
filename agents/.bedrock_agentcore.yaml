@@ -1,0 +1,41 @@
+default_agent: main
+agents:
+  main:
+    name: main
+    entrypoint: main.py
+    platform: linux/arm64
+    container_runtime: none
+    source_path: .
+    aws:
+      execution_role: arn:aws:iam::767398133223:role/AmazonBedrockAgentCoreSDKRuntime-us-west-2-0d6e4079e3
+      execution_role_auto_create: false
+      account: "767398133223"
+      region: us-west-2
+      ecr_repository: 767398133223.dkr.ecr.us-west-2.amazonaws.com/bedrock-agentcore-main
+      ecr_auto_create: false
+      network_configuration:
+        network_mode: PUBLIC
+        network_mode_config: null
+      protocol_configuration:
+        server_protocol: HTTP
+      observability:
+        enabled: true
+    bedrock_agentcore:
+      agent_id: main-4U1jMUFTtk
+      agent_arn: arn:aws:bedrock-agentcore:us-west-2:767398133223:runtime/main-4U1jMUFTtk
+      agent_session_id: 3347f0c3-2cf5-4e3f-bc2a-86649358e390
+    codebuild:
+      project_name: bedrock-agentcore-main-builder
+      execution_role: arn:aws:iam::767398133223:role/AmazonBedrockAgentCoreSDKCodeBuild-us-west-2-0d6e4079e3
+      source_bucket: bedrock-agentcore-codebuild-sources-767398133223-us-west-2
+    memory:
+      mode: STM_ONLY
+      memory_id: main_mem-O1nhd5AE78
+      memory_arn: arn:aws:bedrock-agentcore:us-west-2:767398133223:memory/main_mem-O1nhd5AE78
+      memory_name: main_mem
+      event_expiry_days: 30
+      first_invoke_memory_check_done: true
+      was_created_by_toolkit: true
+    authorizer_configuration: null
+    request_header_configuration: null
+    oauth_configuration: null

@@ -1,0 +1,8 @@
+# This file is required by agentcore CLI for configuration
+# Actual dependencies are managed in pyproject.toml
+# The Dockerfile uses pyproject.toml with uv sync
+
+bedrock-agentcore==1.0.3
+bedrock-agentcore-starter-toolkit==0.1.26
+strands-agents==1.13.0
+strands-agents-tools==0.2.12
