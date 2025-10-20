@@ -7,7 +7,7 @@ WORKDIR /app
 COPY pyproject.toml ./
 
 # Install dependencies
-RUN pip install --no-cache-dir fastapi==0.119.0 uvicorn[standard]==0.38.0 boto3>=1.40.0 \
+RUN pip install -i https://mirror.zju.edu.cn/pypi/web/simple --no-cache-dir fastapi==0.119.0 uvicorn[standard]==0.38.0 boto3>=1.40.0 \
     pydantic==2.12.3 pydantic-settings==2.11.0 httpx==0.28.1 python-multipart==0.0.20
 
 # Copy application code

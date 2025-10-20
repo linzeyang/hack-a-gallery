@@ -7,7 +7,10 @@ s3_prefix = "hackagallery-backend"
 region = "us-west-2"
 capabilities = "CAPABILITY_IAM"
 image_repositories = ["ProjectAnalysisFunction=767398133223.dkr.ecr.us-west-2.amazonaws.com/hackagallery-backend"]
-confirm_changeset = false
+confirm_changeset = true
 
 [default.build.parameters]
 use_container = true
+
+[default.global.parameters]
+region = "us-west-2"
