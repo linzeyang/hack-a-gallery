@@ -3,7 +3,6 @@
 import logging
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.routers import projects, workflows
@@ -24,14 +23,8 @@ app = FastAPI(
 # Add global exception handler
 app.add_exception_handler(Exception, global_exception_handler)
 
-# Configure CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Note: CORS is handled by Lambda Function URL configuration in SAM template
+# Do not add CORSMiddleware here as it will cause duplicate CORS headers
 
 # Include routers
 app.include_router(projects.router)
