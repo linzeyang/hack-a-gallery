@@ -1,30 +1,63 @@
-import React from 'react';
+import React from "react";
 
-export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement>, 'size'> {
+export interface InputProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement>,
+    "size"
+  > {
   label?: string;
   error?: string;
-  inputType?: 'text' | 'textarea' | 'date' | 'url' | 'email' | 'number';
+  helpText?: string;
+  inputType?: "text" | "textarea" | "date" | "url" | "email" | "number";
   rows?: number;
 }
 
-export const Input = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
-  ({ label, error, inputType = 'text', className = '', rows = 4, id, ...props }, ref) => {
+export const Input = React.forwardRef<
+  HTMLInputElement | HTMLTextAreaElement,
+  InputProps
+>(
+  (
+    {
+      label,
+      error,
+      helpText,
+      inputType = "text",
+      className = "",
+      rows = 4,
+      id,
+      ...props
+    },
+    ref
+  ) => {
     const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
-    
-    const baseStyles = 'w-full px-4 py-2 border rounded-lg transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-1 min-h-[44px] text-base';
-    const normalStyles = 'border-gray-300 focus:border-blue-500 focus:ring-blue-500';
-    const errorStyles = 'border-red-500 focus:border-red-500 focus:ring-red-500';
-    
-    const combinedClassName = `${baseStyles} ${error ? errorStyles : normalStyles} ${className}`;
-    
+
+    const baseStyles =
+      "w-full px-4 py-2 border rounded-lg transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-1 min-h-[44px] text-base";
+    const normalStyles =
+      "border-gray-300 focus:border-blue-500 focus:ring-blue-500";
+    const errorStyles =
+      "border-red-500 focus:border-red-500 focus:ring-red-500";
+
+    const combinedClassName = `${baseStyles} ${
+      error ? errorStyles : normalStyles
+    } ${className}`;
+
+    const describedBy =
+      [
+        error ? `${inputId}-error` : undefined,
+        helpText ? `${inputId}-help` : undefined,
+      ]
+        .filter(Boolean)
+        .join(" ") || undefined;
+
     const sharedProps = {
       id: inputId,
       className: combinedClassName,
-      'aria-invalid': error ? 'true' : 'false',
-      'aria-describedby': error ? `${inputId}-error` : undefined,
+      "aria-invalid": error ? "true" : "false",
+      "aria-describedby": describedBy,
       ...props,
     };
-    
+
     return (
       <div className="w-full">
         {label && (
@@ -35,8 +68,8 @@ export const Input = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, In
             {label}
           </label>
         )}
-        
-        {inputType === 'textarea' ? (
+
+        {inputType === "textarea" ? (
           <textarea
             ref={ref as React.Ref<HTMLTextAreaElement>}
             rows={rows}
@@ -49,7 +82,13 @@ export const Input = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, In
             {...(sharedProps as React.InputHTMLAttributes<HTMLInputElement>)}
           />
         )}
-        
+
+        {helpText && !error && (
+          <p id={`${inputId}-help`} className="mt-1 text-sm text-gray-600">
+            {helpText}
+          </p>
+        )}
+
         {error && (
           <p
             id={`${inputId}-error`}
@@ -64,4 +103,4 @@ export const Input = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, In
   }
 );
 
-Input.displayName = 'Input';
+Input.displayName = "Input";

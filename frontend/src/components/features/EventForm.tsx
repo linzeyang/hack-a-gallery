@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import type { Event, Prize } from '@/lib/types/event';
-import { validateEvent } from '@/lib/utils/validation';
+import React, { useState } from "react";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import type { Event, Prize } from "@/lib/types/event";
+import { validateEvent } from "@/lib/utils/validation";
 
 export interface EventFormProps {
   initialData?: Event;
-  onSubmit: (data: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onSubmit: (data: Omit<Event, "id" | "createdAt" | "updatedAt">) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -20,19 +20,28 @@ export const EventForm: React.FC<EventFormProps> = ({
   isLoading = false,
 }) => {
   const [formData, setFormData] = useState({
-    name: initialData?.name || '',
-    description: initialData?.description || '',
-    startDate: initialData?.startDate || '',
-    endDate: initialData?.endDate || '',
-    location: initialData?.location || '',
-    requirements: initialData?.requirements || '',
-    organizerId: initialData?.organizerId || 'org_default',
-    organizerName: initialData?.organizerName || '',
+    name: initialData?.name || "",
+    description: initialData?.description || "",
+    startDate: initialData?.startDate || "",
+    endDate: initialData?.endDate || "",
+    location: initialData?.location || "",
+    requirements: initialData?.requirements || "",
+    organizerId: initialData?.organizerId || "org_default",
+    organizerName: initialData?.organizerName || "",
     isHidden: initialData?.isHidden || false,
   });
 
   const [prizes, setPrizes] = useState<Prize[]>(
-    initialData?.prizes || [{ title: '', amount: '', description: '' }]
+    initialData?.prizes || [
+      {
+        id: "",
+        title: "",
+        amount: "",
+        description: "",
+        maxWinners: 1,
+        currentWinners: 0,
+      },
+    ]
   );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -42,7 +51,7 @@ export const EventForm: React.FC<EventFormProps> = ({
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
+
     // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors((prev) => {
@@ -56,12 +65,12 @@ export const EventForm: React.FC<EventFormProps> = ({
   const handlePrizeChange = (
     index: number,
     field: keyof Prize,
-    value: string
+    value: string | number
   ) => {
     const newPrizes = [...prizes];
     newPrizes[index] = { ...newPrizes[index], [field]: value };
     setPrizes(newPrizes);
-    
+
     // Clear error for this prize field
     const errorKey = `prize_${index}_${field}`;
     if (errors[errorKey]) {
@@ -74,7 +83,17 @@ export const EventForm: React.FC<EventFormProps> = ({
   };
 
   const addPrize = () => {
-    setPrizes([...prizes, { title: '', amount: '', description: '' }]);
+    setPrizes([
+      ...prizes,
+      {
+        id: "",
+        title: "",
+        amount: "",
+        description: "",
+        maxWinners: 1,
+        currentWinners: 0,
+      },
+    ]);
   };
 
   const removePrize = (index: number) => {
@@ -86,9 +105,19 @@ export const EventForm: React.FC<EventFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Process prizes: filter empty ones and ensure all required fields are set
+    const processedPrizes = prizes
+      .filter((p) => p.title.trim() || p.amount.trim())
+      .map((prize, index) => ({
+        ...prize,
+        id: prize.id || `prize_${Date.now()}_${index}`,
+        maxWinners: prize.maxWinners || 1,
+        currentWinners: prize.currentWinners || 0,
+      }));
+
     const eventData = {
       ...formData,
-      prizes: prizes.filter((p) => p.title.trim() || p.amount.trim()),
+      prizes: processedPrizes,
     };
 
     const validation = validateEvent(eventData);
@@ -219,7 +248,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                 label="Prize Title"
                 value={prize.title}
                 onChange={(e) =>
-                  handlePrizeChange(index, 'title', e.target.value)
+                  handlePrizeChange(index, "title", e.target.value)
                 }
                 error={errors[`prize_${index}_title`]}
                 placeholder="Grand Prize, Best Design, etc."
@@ -229,7 +258,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                 label="Prize Amount"
                 value={prize.amount}
                 onChange={(e) =>
-                  handlePrizeChange(index, 'amount', e.target.value)
+                  handlePrizeChange(index, "amount", e.target.value)
                 }
                 error={errors[`prize_${index}_amount`]}
                 placeholder="$10,000"
@@ -240,10 +269,26 @@ export const EventForm: React.FC<EventFormProps> = ({
                 inputType="textarea"
                 value={prize.description}
                 onChange={(e) =>
-                  handlePrizeChange(index, 'description', e.target.value)
+                  handlePrizeChange(index, "description", e.target.value)
                 }
                 placeholder="Description of the prize..."
                 rows={2}
+              />
+
+              <Input
+                label="Number of Winners"
+                inputType="number"
+                value={prize.maxWinners?.toString() || "1"}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value, 10);
+                  if (!isNaN(value) && value >= 1) {
+                    handlePrizeChange(index, "maxWinners", value);
+                  }
+                }}
+                error={errors[`prize_${index}_maxWinners`]}
+                placeholder="1"
+                min={1}
+                helpText="How many projects can win this prize?"
               />
             </div>
           ))}
@@ -261,7 +306,7 @@ export const EventForm: React.FC<EventFormProps> = ({
           Cancel
         </Button>
         <Button type="submit" variant="primary" loading={isLoading}>
-          {initialData ? 'Update Event' : 'Create Event'}
+          {initialData ? "Update Event" : "Create Event"}
         </Button>
       </div>
     </form>
