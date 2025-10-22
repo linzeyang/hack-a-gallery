@@ -1,12 +1,15 @@
 import React from "react";
 import { Project } from "../types/project";
 import { Event } from "../types/event";
+import { PrizeFilterStatus } from "../types/prize";
+import { filterProjectsByPrizeStatus } from "./prizes";
 
 export interface FilterCriteria {
   searchTerm: string;
   selectedTechnologies: string[];
   selectedEvents: string[];
   sortBy: "date" | "title" | "popularity";
+  prizeStatus: PrizeFilterStatus;
 }
 
 /**
@@ -96,6 +99,9 @@ export function filterProjects(
 
   // Apply event filter
   filtered = filterProjectsByEvents(filtered, criteria.selectedEvents);
+
+  // Apply prize status filter
+  filtered = filterProjectsByPrizeStatus(filtered, criteria.prizeStatus);
 
   return filtered;
 }
@@ -222,9 +228,28 @@ export function highlightSearchTerm(
     }
     return part;
   });
-} /**
+}
 
+/**
  * Main function that combines filtering and sorting of projects
+ *
+ * This function applies all filter criteria (text search, technologies, events, prize status)
+ * and then sorts the results according to the specified sort order.
+ *
+ * @param projects - Array of projects to filter and sort
+ * @param criteria - Filter criteria including searchTerm, selectedTechnologies, selectedEvents, prizeStatus, and sortBy
+ * @returns Filtered and sorted array of projects
+ *
+ * @example
+ * ```typescript
+ * const filtered = filterAndSortProjects(projects, {
+ *   searchTerm: "react",
+ *   selectedTechnologies: ["TypeScript"],
+ *   selectedEvents: ["evt_123"],
+ *   prizeStatus: "winners",
+ *   sortBy: "date"
+ * });
+ * ```
  */
 export function filterAndSortProjects(
   projects: Project[],

@@ -5,12 +5,15 @@ import { ProjectCard } from "./ProjectCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { Project } from "@/lib/types/project";
 
+import type { PrizeFilterStatus } from "@/lib/types/prize";
+
 export interface SearchResultsProps {
   projects: Project[];
   searchTerm: string;
   activeFilters: {
     technologies: string[];
     events: string[];
+    prizeStatus?: PrizeFilterStatus;
     sortBy: string;
   };
   totalCount: number;
@@ -70,6 +73,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   const hasActiveFilters =
     activeFilters.technologies.length > 0 ||
     activeFilters.events.length > 0 ||
+    (activeFilters.prizeStatus && activeFilters.prizeStatus !== "all") ||
     searchTerm.trim().length > 0;
 
   const getFilterSummary = () => {
@@ -93,6 +97,14 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
           activeFilters.events.length > 1 ? "s" : ""
         }`
       );
+    }
+
+    if (activeFilters.prizeStatus && activeFilters.prizeStatus !== "all") {
+      const prizeLabel =
+        activeFilters.prizeStatus === "winners"
+          ? "prize winners only"
+          : "no prizes";
+      parts.push(prizeLabel);
     }
 
     return parts.join(", ");

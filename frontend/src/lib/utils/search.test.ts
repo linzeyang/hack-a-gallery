@@ -32,6 +32,8 @@ const mockProjects: Project[] = [
     ],
     hackerId: "user_1",
     isHidden: false,
+    prizeAwards: [],
+    hasPrizes: false,
     createdAt: "2024-01-15T10:00:00Z",
     updatedAt: "2024-01-15T10:00:00Z",
   },
@@ -45,6 +47,8 @@ const mockProjects: Project[] = [
     teamMembers: [{ name: "Bob Wilson", role: "Backend Developer" }],
     hackerId: "user_2",
     isHidden: false,
+    prizeAwards: [],
+    hasPrizes: false,
     createdAt: "2024-01-10T08:00:00Z",
     updatedAt: "2024-01-10T08:00:00Z",
   },
@@ -62,6 +66,8 @@ const mockProjects: Project[] = [
     ],
     hackerId: "user_3",
     isHidden: false,
+    prizeAwards: [],
+    hasPrizes: false,
     createdAt: "2024-01-20T14:00:00Z",
     updatedAt: "2024-01-20T14:00:00Z",
   },
@@ -191,6 +197,7 @@ describe("Search and Filter Functions", () => {
         searchTerm: "React",
         selectedTechnologies: ["React"],
         selectedEvents: ["evt_1"],
+        prizeStatus: "all",
         sortBy: "date",
       };
       const result = filterProjects(mockProjects, criteria);
@@ -203,6 +210,7 @@ describe("Search and Filter Functions", () => {
         searchTerm: "React",
         selectedTechnologies: ["Python"],
         selectedEvents: [],
+        prizeStatus: "all",
         sortBy: "date",
       };
       const result = filterProjects(mockProjects, criteria);
@@ -272,7 +280,10 @@ describe("Search and Filter Functions", () => {
     });
 
     it("should return original array for unknown sort type", () => {
-      const result = sortProjects(mockProjects, "unknown" as unknown);
+      const result = sortProjects(
+        mockProjects,
+        "unknown" as "date" | "title" | "popularity"
+      );
       expect(result).toEqual(mockProjects);
     });
   });
@@ -374,6 +385,7 @@ describe("Search and Filter Functions", () => {
         searchTerm: "",
         selectedTechnologies: [],
         selectedEvents: [],
+        prizeStatus: "all",
         sortBy: "date",
       };
 
@@ -387,6 +399,7 @@ describe("Search and Filter Functions", () => {
         searchTerm: "React",
         selectedTechnologies: [],
         selectedEvents: [],
+        prizeStatus: "all",
         sortBy: "title",
       };
 

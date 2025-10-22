@@ -13,6 +13,7 @@ import {
 } from "@/lib/utils/search";
 import type { Project } from "@/lib/types/project";
 import type { Event } from "@/lib/types/event";
+import type { PrizeFilterStatus } from "@/lib/types/prize";
 
 interface ProjectsClientProps {
   projects: Project[];
@@ -28,6 +29,7 @@ export function ProjectsClient({ projects, events }: ProjectsClientProps) {
     []
   );
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
+  const [prizeStatus, setPrizeStatus] = useState<PrizeFilterStatus>("all");
   const [sortBy, setSortBy] = useState<"date" | "title" | "popularity">("date");
 
   // Derived data with memoization
@@ -48,15 +50,24 @@ export function ProjectsClient({ projects, events }: ProjectsClientProps) {
       searchTerm,
       selectedTechnologies,
       selectedEvents,
+      prizeStatus,
       sortBy,
     });
-  }, [projects, searchTerm, selectedTechnologies, selectedEvents, sortBy]);
+  }, [
+    projects,
+    searchTerm,
+    selectedTechnologies,
+    selectedEvents,
+    prizeStatus,
+    sortBy,
+  ]);
 
   // Clear all filters handler
   const handleClearAll = () => {
     setSearchTerm("");
     setSelectedTechnologies([]);
     setSelectedEvents([]);
+    setPrizeStatus("all");
     setSortBy("date");
   };
 
@@ -88,9 +99,11 @@ export function ProjectsClient({ projects, events }: ProjectsClientProps) {
             events={eventsWithCounts}
             selectedTechnologies={selectedTechnologies}
             selectedEvents={selectedEvents}
+            prizeStatus={prizeStatus}
             sortBy={sortBy}
             onTechnologyChange={setSelectedTechnologies}
             onEventChange={setSelectedEvents}
+            onPrizeStatusChange={setPrizeStatus}
             onSortChange={setSortBy}
             onClearAll={handleClearAll}
           />
@@ -103,6 +116,7 @@ export function ProjectsClient({ projects, events }: ProjectsClientProps) {
           activeFilters={{
             technologies: selectedTechnologies,
             events: selectedEvents,
+            prizeStatus,
             sortBy,
           }}
           totalCount={projects.length}

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
+import { PrizeFilterStatus } from "@/lib/types/prize";
 
 export interface FilterOption {
   id: string;
@@ -15,9 +16,11 @@ export interface FilterControlsProps {
   selectedTechnologies: string[];
   selectedEvents: string[];
   sortBy: "date" | "title" | "popularity";
+  prizeStatus: PrizeFilterStatus;
   onTechnologyChange: (technologies: string[]) => void;
   onEventChange: (events: string[]) => void;
   onSortChange: (sort: "date" | "title" | "popularity") => void;
+  onPrizeStatusChange: (status: PrizeFilterStatus) => void;
   onClearAll: () => void;
   className?: string;
 }
@@ -142,14 +145,18 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
   selectedTechnologies,
   selectedEvents,
   sortBy,
+  prizeStatus,
   onTechnologyChange,
   onEventChange,
   onSortChange,
+  onPrizeStatusChange,
   onClearAll,
   className = "",
 }) => {
   const hasActiveFilters =
-    selectedTechnologies.length > 0 || selectedEvents.length > 0;
+    selectedTechnologies.length > 0 ||
+    selectedEvents.length > 0 ||
+    prizeStatus !== "all";
 
   const handleRemoveTechnology = (techId: string) => {
     onTechnologyChange(selectedTechnologies.filter((id) => id !== techId));
@@ -163,6 +170,12 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
     { value: "date", label: "Most Recent" },
     { value: "title", label: "Alphabetical" },
     { value: "popularity", label: "Most Popular" },
+  ] as const;
+
+  const prizeStatusOptions = [
+    { value: "all", label: "All Projects" },
+    { value: "winners", label: "Winners Only" },
+    { value: "no-prizes", label: "No Prizes" },
   ] as const;
 
   return (
@@ -195,6 +208,27 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
             onChange={onEventChange}
             placeholder="Select events"
           />
+        </div>
+
+        {/* Prize Status Filter */}
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Prize Status
+          </label>
+          <select
+            value={prizeStatus}
+            onChange={(e) =>
+              onPrizeStatusChange(e.target.value as PrizeFilterStatus)
+            }
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[44px]"
+            aria-label="Filter projects by prize status"
+          >
+            {prizeStatusOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Sort Dropdown */}
@@ -304,6 +338,33 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
               </span>
             ) : null;
           })}
+
+          {/* Prize Status Tag */}
+          {prizeStatus !== "all" && (
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-800">
+              {prizeStatus === "winners" ? "Winners Only" : "No Prizes"}
+              <button
+                type="button"
+                onClick={() => onPrizeStatusChange("all")}
+                className="ml-2 hover:text-yellow-600 focus:outline-none focus:text-yellow-600"
+                aria-label="Remove prize status filter"
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </span>
+          )}
         </div>
       )}
     </div>
