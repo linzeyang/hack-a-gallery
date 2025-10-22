@@ -16,39 +16,47 @@ export interface AWSConfig {
 /**
  * Retrieves AWS configuration from environment variables with validation and fallbacks.
  *
- * Environment Variables:
+ * SECURITY: This function must ONLY be called from server-side code.
+ * AWS credentials and configuration should never be exposed to the browser.
+ *
+ * Environment Variables (SERVER-SIDE ONLY):
  * - HACKAGALLERY_AWS_REGION: AWS region (for Vercel and Netlify, since AWS_* is reserved)
  * - AWS_REGION: AWS region (for other platforms)
- * - NEXT_PUBLIC_AWS_REGION: AWS region (client-side fallback)
- * - DYNAMODB_TABLE_NAME or NEXT_PUBLIC_DYNAMODB_TABLE_NAME: DynamoDB table name (required)
- * - DYNAMODB_ENDPOINT or NEXT_PUBLIC_DYNAMODB_ENDPOINT: Local DynamoDB endpoint (optional)
+ * - DYNAMODB_TABLE_NAME: DynamoDB table name (required, server-side only)
+ * - DYNAMODB_ENDPOINT: Local DynamoDB endpoint (optional, for development)
  *
- * @throws {Error} If required configuration (table name) is missing
+ * @throws {Error} If called from browser or if required configuration is missing
  * @returns {AWSConfig} Validated AWS configuration object
  */
 export function getAWSConfig(): AWSConfig {
+  // SECURITY: Prevent client-side access to AWS configuration
+  if (typeof window !== "undefined") {
+    throw new Error(
+      "AWS configuration must not be accessed from browser. " +
+        "This function can only be called from server-side code (API routes, Server Components, etc.). " +
+        "Use API routes to access AWS resources from client components."
+    );
+  }
+
   // Read region with custom prefix for Vercel and Netlify compatibility
   // Vercel and Netlify reserves AWS_REGION, so we check HACKAGALLERY_AWS_REGION first
   const region =
     process.env.HACKAGALLERY_AWS_REGION ||
     process.env.AWS_REGION ||
-    process.env.NEXT_PUBLIC_AWS_REGION ||
     "us-west-2";
 
-  // Read table name (required)
-  const tableName =
-    process.env.DYNAMODB_TABLE_NAME ||
-    process.env.NEXT_PUBLIC_DYNAMODB_TABLE_NAME;
+  // Read table name (required) - SERVER-SIDE ONLY
+  const tableName = process.env.DYNAMODB_TABLE_NAME;
 
-  // Read optional endpoint for local development
-  const endpoint =
-    process.env.DYNAMODB_ENDPOINT || process.env.NEXT_PUBLIC_DYNAMODB_ENDPOINT;
+  // Read optional endpoint for local development - SERVER-SIDE ONLY
+  const endpoint = process.env.DYNAMODB_ENDPOINT;
 
   // Validate required configuration
   if (!tableName) {
     throw new Error(
       "DYNAMODB_TABLE_NAME environment variable is required. " +
-        "Please set DYNAMODB_TABLE_NAME or NEXT_PUBLIC_DYNAMODB_TABLE_NAME in your environment."
+        "This must be set as a server-side environment variable (without NEXT_PUBLIC_ prefix). " +
+        "AWS credentials and table names should never be exposed to the browser."
     );
   }
 
@@ -185,6 +193,55 @@ export function getDocumentClient(config: AWSConfig): DynamoDBDocumentClient {
   }
 
   return documentClient;
+}
+
+/**
+ * Validates security configuration to ensure sensitive variables are not exposed to the browser.
+ *
+ * This function scans environment variables for potential security violations:
+ * - NEXT_PUBLIC_ prefixed variables that contain AWS credentials or secrets
+ * - Accidentally exposed sensitive configuration
+ *
+ * @throws {Error} If security violations are detected
+ */
+export function validateSecurityConfiguration(): void {
+  // Check for accidentally exposed sensitive variables with NEXT_PUBLIC_ prefix
+  const exposedVars = Object.keys(process.env).filter(
+    (key) =>
+      key.startsWith("NEXT_PUBLIC_") &&
+      (key.includes("AWS_ACCESS_KEY") ||
+        key.includes("AWS_SECRET") ||
+        key.includes("DYNAMODB_TABLE_NAME") ||
+        key.includes("DYNAMODB_ENDPOINT") ||
+        key.includes("SECRET") ||
+        key.includes("PRIVATE_KEY") ||
+        key.includes("API_KEY"))
+  );
+
+  if (exposedVars.length > 0) {
+    throw new Error(
+      `Security violation: Sensitive variables exposed to browser with NEXT_PUBLIC_ prefix: ${exposedVars.join(
+        ", "
+      )}. ` +
+        "Remove NEXT_PUBLIC_ prefix from these variables to keep them server-side only. " +
+        "AWS credentials and sensitive configuration should never be accessible from the browser."
+    );
+  }
+
+  // Additional check for common AWS credential patterns
+  const awsCredentialVars = Object.keys(process.env).filter(
+    (key) =>
+      key.startsWith("NEXT_PUBLIC_") &&
+      (key.includes("AKIA") || key.includes("ASIA")) // AWS Access Key patterns
+  );
+
+  if (awsCredentialVars.length > 0) {
+    throw new Error(
+      `Security violation: AWS credentials detected in browser-accessible variables: ${awsCredentialVars.join(
+        ", "
+      )}. ` + "AWS credentials must never be exposed to the browser."
+    );
+  }
 }
 
 /**

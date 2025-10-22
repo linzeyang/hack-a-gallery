@@ -5,13 +5,14 @@
  * Following AAA (Arrange, Act, Assert) pattern for clarity
  */
 
-import { describe, it, expect, beforeEach, afterAll } from "vitest";
+import { describe, it, expect, beforeEach, afterAll, vi } from "vitest";
 import type { AWSConfig } from "./aws";
 import {
   getAWSConfig,
   getDynamoDBClient,
   getDocumentClient,
   resetClients,
+  validateSecurityConfiguration,
 } from "./aws";
 
 describe("AWS Configuration Module", () => {
@@ -31,6 +32,35 @@ describe("AWS Configuration Module", () => {
   });
 
   describe("getAWSConfig", () => {
+    describe("security validation", () => {
+      it("should throw error when called from browser", () => {
+        // Arrange: Mock browser environment
+        vi.stubGlobal("window", {});
+        process.env.DYNAMODB_TABLE_NAME = "test-table";
+
+        // Act & Assert
+        expect(() => getAWSConfig()).toThrow(
+          "AWS configuration must not be accessed from browser"
+        );
+
+        // Cleanup
+        vi.unstubAllGlobals();
+      });
+
+      it("should work in server environment", () => {
+        // Arrange: Ensure server environment (no window)
+        vi.unstubAllGlobals();
+        process.env.DYNAMODB_TABLE_NAME = "test-table";
+
+        // Act
+        const config = getAWSConfig();
+
+        // Assert
+        expect(config).toBeDefined();
+        expect(config.tableName).toBe("test-table");
+      });
+    });
+
     describe("region configuration", () => {
       it("should use default region (us-west-2) when not specified", () => {
         // Arrange
@@ -45,7 +75,20 @@ describe("AWS Configuration Module", () => {
         expect(config.endpoint).toBeUndefined();
       });
 
-      it("should prioritize AWS_REGION over default", () => {
+      it("should prioritize HACKAGALLERY_AWS_REGION over AWS_REGION", () => {
+        // Arrange
+        process.env.HACKAGALLERY_AWS_REGION = "eu-central-1";
+        process.env.AWS_REGION = "eu-west-1";
+        process.env.DYNAMODB_TABLE_NAME = "test-table";
+
+        // Act
+        const config = getAWSConfig();
+
+        // Assert
+        expect(config.region).toBe("eu-central-1");
+      });
+
+      it("should use AWS_REGION when HACKAGALLERY_AWS_REGION not set", () => {
         // Arrange
         process.env.AWS_REGION = "eu-west-1";
         process.env.DYNAMODB_TABLE_NAME = "test-table";
@@ -55,18 +98,6 @@ describe("AWS Configuration Module", () => {
 
         // Assert
         expect(config.region).toBe("eu-west-1");
-      });
-
-      it("should use NEXT_PUBLIC_AWS_REGION when AWS_REGION not set", () => {
-        // Arrange
-        process.env.NEXT_PUBLIC_AWS_REGION = "ap-southeast-1";
-        process.env.DYNAMODB_TABLE_NAME = "test-table";
-
-        // Act
-        const config = getAWSConfig();
-
-        // Assert
-        expect(config.region).toBe("ap-southeast-1");
       });
     });
 
@@ -102,6 +133,15 @@ describe("AWS Configuration Module", () => {
         // Act & Assert
         expect(() => getAWSConfig()).toThrow(
           "DYNAMODB_TABLE_NAME environment variable is required"
+        );
+      });
+
+      it("should provide clear error message about server-side only requirement", () => {
+        // Arrange: No table name set
+
+        // Act & Assert
+        expect(() => getAWSConfig()).toThrow(
+          "This must be set as a server-side environment variable"
         );
       });
     });
@@ -198,6 +238,79 @@ describe("AWS Configuration Module", () => {
 
       // Assert
       expect(client1).not.toBe(client2);
+    });
+  });
+
+  describe("validateSecurityConfiguration", () => {
+    it("should pass validation with secure configuration", () => {
+      // Arrange: Clean environment with no exposed variables
+      process.env = {
+        ...originalEnv,
+        DYNAMODB_TABLE_NAME: "test-table",
+        AWS_REGION: "us-west-2",
+      };
+
+      // Act & Assert
+      expect(() => validateSecurityConfiguration()).not.toThrow();
+    });
+
+    it("should detect exposed DYNAMODB_TABLE_NAME", () => {
+      // Arrange
+      process.env.NEXT_PUBLIC_DYNAMODB_TABLE_NAME = "exposed-table";
+
+      // Act & Assert
+      expect(() => validateSecurityConfiguration()).toThrow(
+        "Security violation: Sensitive variables exposed to browser"
+      );
+    });
+
+    it("should detect exposed DYNAMODB_ENDPOINT", () => {
+      // Arrange
+      process.env.NEXT_PUBLIC_DYNAMODB_ENDPOINT = "http://localhost:8000";
+
+      // Act & Assert
+      expect(() => validateSecurityConfiguration()).toThrow(
+        "Security violation: Sensitive variables exposed to browser"
+      );
+    });
+
+    it("should detect exposed AWS credentials", () => {
+      // Arrange
+      process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE";
+
+      // Act & Assert
+      expect(() => validateSecurityConfiguration()).toThrow(
+        "Security violation: Sensitive variables exposed to browser"
+      );
+    });
+
+    it("should detect exposed SECRET variables", () => {
+      // Arrange
+      process.env.NEXT_PUBLIC_SECRET_KEY = "secret-value";
+
+      // Act & Assert
+      expect(() => validateSecurityConfiguration()).toThrow(
+        "Security violation: Sensitive variables exposed to browser"
+      );
+    });
+
+    it("should detect AWS access key patterns", () => {
+      // Arrange
+      process.env.NEXT_PUBLIC_SOME_AKIA_VAR = "AKIAIOSFODNN7EXAMPLE";
+
+      // Act & Assert
+      expect(() => validateSecurityConfiguration()).toThrow(
+        "Security violation: AWS credentials detected in browser-accessible variables"
+      );
+    });
+
+    it("should allow safe NEXT_PUBLIC variables", () => {
+      // Arrange
+      process.env.NEXT_PUBLIC_APP_URL = "https://example.com";
+      process.env.NEXT_PUBLIC_ENV = "development";
+
+      // Act & Assert
+      expect(() => validateSecurityConfiguration()).not.toThrow();
     });
   });
 });
