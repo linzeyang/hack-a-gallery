@@ -12,7 +12,10 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { projectService } from "@/services/projectService";
 import { eventService } from "@/services/eventService";
+import { prizeAwardService } from "@/services/prizeAwardService";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { PrizeSection } from "@/components/features/PrizeSection";
+import type { PrizeAward } from "@/lib/types/prize";
 
 interface ProjectDetailPageProps {
   params: Promise<{
@@ -36,6 +39,18 @@ export default async function ProjectDetailPage({
   // Fetch associated event data
   const eventResponse = await eventService.getById(project.eventId);
   const event = eventResponse.success ? eventResponse.data : null;
+
+  // Fetch prize awards for this project
+  let prizeAwards: PrizeAward[] = [];
+  try {
+    const prizeAwardsResponse = await prizeAwardService.getByProject(id);
+    if (prizeAwardsResponse.success && prizeAwardsResponse.data) {
+      prizeAwards = prizeAwardsResponse.data;
+    }
+  } catch (error) {
+    console.error("Error fetching prize awards:", error);
+    // Continue rendering without prize awards
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 sm:py-12">
@@ -66,7 +81,7 @@ export default async function ProjectDetailPage({
         {/* Project Header */}
         <Card className="mb-4 sm:mb-6">
           <CardHeader className="p-4 sm:p-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 break-words">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 wrap-break-word">
               {project.name}
             </h1>
             {event && (
@@ -97,7 +112,7 @@ export default async function ProjectDetailPage({
               {/* GitHub URL */}
               <div className="flex items-start gap-3">
                 <svg
-                  className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 flex-shrink-0 mt-0.5"
+                  className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 shrink-0 mt-0.5"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                   aria-hidden="true"
@@ -127,7 +142,7 @@ export default async function ProjectDetailPage({
               {project.demoUrl && (
                 <div className="flex items-start gap-3">
                   <svg
-                    className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 flex-shrink-0 mt-0.5"
+                    className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 shrink-0 mt-0.5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -218,7 +233,7 @@ export default async function ProjectDetailPage({
                     key={index}
                     className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg min-h-[72px]"
                   >
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-base sm:text-lg font-semibold flex-shrink-0">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-linear-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-base sm:text-lg font-semibold shrink-0">
                       {member.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -246,6 +261,9 @@ export default async function ProjectDetailPage({
           </Card>
         )}
 
+        {/* Awards & Recognition */}
+        <PrizeSection prizeAwards={prizeAwards} event={event ?? null} />
+
         {/* Associated Event Info */}
         {event && (
           <Card>
@@ -262,7 +280,7 @@ export default async function ProjectDetailPage({
                   </p>
                   <Link
                     href={`/events/${event.id}`}
-                    className="text-base sm:text-lg font-semibold text-blue-600 hover:text-blue-800 hover:underline break-words"
+                    className="text-base sm:text-lg font-semibold text-blue-600 hover:text-blue-800 hover:underline wrap-break-word"
                   >
                     {event.name}
                   </Link>

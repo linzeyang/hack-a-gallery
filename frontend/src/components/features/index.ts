@@ -12,3 +12,5 @@ export { FilterControls } from "./FilterControls";
 export { SearchResults } from "./SearchResults";
 export { PrizeBadge } from "./PrizeBadge";
 export { PrizeTooltip } from "./PrizeTooltip";
+export { PrizeCard } from "./PrizeCard";
+export { PrizeSection } from "./PrizeSection";
