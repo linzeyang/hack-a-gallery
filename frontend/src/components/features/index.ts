@@ -7,3 +7,6 @@ export { ProjectForm } from "./ProjectForm";
 export { ProjectAnalysisForm } from "./ProjectAnalysisForm";
 export { ProjectAnalysisPreview } from "./ProjectAnalysisPreview";
 export { ProjectFormWithAnalysis } from "./ProjectFormWithAnalysis";
+export { SearchBar } from "./SearchBar";
+export { FilterControls } from "./FilterControls";
+export { SearchResults } from "./SearchResults";
