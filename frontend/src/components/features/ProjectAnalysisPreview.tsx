@@ -75,7 +75,7 @@ const CategoryTag: React.FC<{
 const KeyFeatureItem: React.FC<{ feature: string }> = ({ feature }) => (
   <li className="flex items-start gap-2">
     <svg
-      className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
+      className="w-4 h-4 text-green-500 shrink-0 mt-0.5"
       fill="currentColor"
       viewBox="0 0 20 20"
     >
@@ -109,6 +109,7 @@ const EmptySection: React.FC<{
  */
 export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
   analysis,
+  repositoryUrl,
   isLoading = false,
   onConfirm,
   onEdit,
@@ -116,6 +117,15 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
   className = "",
 }) => {
   const { summary, technologies, tags, key_features, metadata } = analysis;
+
+  // Extract owner/repo from GitHub URL
+  const getRepoIdentifier = (url?: string) => {
+    if (!url) return null;
+    const match = url.match(/github\.com\/([^/]+\/[^/]+)/);
+    return match ? match[1].replace(/\.git$/, "") : null;
+  };
+
+  const repoId = getRepoIdentifier(repositoryUrl);
 
   return (
     <Card className={`w-full max-w-4xl mx-auto ${className}`}>
@@ -135,9 +145,34 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
                   clipRule="evenodd"
                 />
               </svg>
-              <h2 className="text-xl font-bold text-gray-900">
-                Project Analysis Results
-              </h2>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  Project Analysis Results
+                </h2>
+                {repoId && (
+                  <a
+                    href={repositoryUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+                  >
+                    {repoId}
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
+                  </a>
+                )}
+              </div>
             </div>
 
             {/* Metadata */}
@@ -148,13 +183,11 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
                 Processing time:{" "}
                 {formatProcessingTime(metadata.processing_time_ms)}
               </span>
-              <span>•</span>
-              <span>Request ID: {metadata.request_id.slice(-8)}</span>
             </div>
           </div>
 
           {/* Status Badge */}
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
               <svg
                 className="w-3 h-3 mr-1"
@@ -338,31 +371,6 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
                 />
               </svg>
               Confirm & Use
-            </Button>
-          )}
-
-          {onEdit && (
-            <Button
-              variant="outline"
-              size="md"
-              onClick={() => onEdit(analysis)}
-              disabled={isLoading}
-              className="flex-1 sm:flex-none"
-            >
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
-              </svg>
-              Edit Results
             </Button>
           )}
 

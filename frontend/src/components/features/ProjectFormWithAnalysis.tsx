@@ -33,6 +33,7 @@ export const ProjectFormWithAnalysis: React.FC<
   const [analysisData, setAnalysisData] = useState<ProjectAnalysis | null>(
     null
   );
+  const [repositoryUrl, setRepositoryUrl] = useState<string>("");
   const [enhancedProjectData, setEnhancedProjectData] =
     useState<Partial<Project> | null>(null);
 
@@ -40,12 +41,13 @@ export const ProjectFormWithAnalysis: React.FC<
    * Handle successful analysis completion
    */
   const handleAnalysisComplete = useCallback(
-    (analysis: ProjectAnalysis, repositoryUrl: string) => {
+    (analysis: ProjectAnalysis, repoUrl: string) => {
       setAnalysisData(analysis);
+      setRepositoryUrl(repoUrl);
 
       // Extract repository name from URL for default project name
       // e.g., "https://github.com/owner/repo-name" -> "repo-name"
-      const repoName = repositoryUrl.split("/").pop()?.replace(/-/g, " ") || "";
+      const repoName = repoUrl.split("/").pop()?.replace(/-/g, " ") || "";
       // Capitalize first letter of each word
       const projectName =
         repoName
@@ -59,7 +61,7 @@ export const ProjectFormWithAnalysis: React.FC<
       const enhancedData: Partial<Project> = {
         ...initialData,
         name: projectName, // Set from repository name
-        githubUrl: repositoryUrl, // Set from the analysis form URL
+        githubUrl: repoUrl, // Set from the analysis form URL
         description: analysis.summary || initialData?.description || "",
         technologies:
           analysis.technologies?.map((tech) => tech.name) ||
@@ -238,6 +240,7 @@ export const ProjectFormWithAnalysis: React.FC<
       {analysisData && (
         <ProjectAnalysisPreview
           analysis={analysisData}
+          repositoryUrl={repositoryUrl}
           onConfirm={handleConfirmAnalysis}
           onEdit={handleEditAnalysis}
           onReAnalyze={handleReAnalyze}

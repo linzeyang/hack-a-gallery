@@ -330,7 +330,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
       {/* Form Actions */}
       <div className="flex gap-3 pt-4">
         <Button type="submit" loading={isSubmitting} disabled={isSubmitting}>
-          {initialData ? "Update Project" : "Submit Project"}
+          {initialData?.id ? "Update Project" : "Submit Project"}
         </Button>
         <Button
           type="button"

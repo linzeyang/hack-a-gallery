@@ -111,6 +111,8 @@ export interface AnalysisFormState {
 export interface AnalysisPreviewProps {
   /** Analysis results to display */
   analysis: ProjectAnalysis;
+  /** Repository URL being analyzed */
+  repositoryUrl?: string;
   /** Loading state for actions */
   isLoading?: boolean;
   /** Callback when user confirms analysis */
