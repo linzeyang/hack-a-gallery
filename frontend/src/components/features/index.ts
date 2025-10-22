@@ -10,3 +10,5 @@ export { ProjectFormWithAnalysis } from "./ProjectFormWithAnalysis";
 export { SearchBar } from "./SearchBar";
 export { FilterControls } from "./FilterControls";
 export { SearchResults } from "./SearchResults";
+export { PrizeBadge } from "./PrizeBadge";
+export { PrizeTooltip } from "./PrizeTooltip";
