@@ -1,44 +1,56 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardBody, CardHeader } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { EmptyState } from '@/components/ui/EmptyState';
-import type { Event } from '@/lib/types/event';
-import type { Project } from '@/lib/types/project';
+import React from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ProjectCard } from "./ProjectCard";
+import type { Event } from "@/lib/types/event";
+import type { Project } from "@/lib/types/project";
 
 export interface EventDetailProps {
   event: Event;
   projects: Project[];
 }
 
-export const EventDetail: React.FC<EventDetailProps> = ({ event, projects }) => {
+export const EventDetail: React.FC<EventDetailProps> = ({
+  event,
+  projects,
+}) => {
   const router = useRouter();
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Back Button */}
-      <Button variant="outline" onClick={() => router.push('/events')} className="text-sm sm:text-base">
+      <Button
+        variant="outline"
+        onClick={() => router.push("/events")}
+        className="text-sm sm:text-base"
+      >
         ← Back to Events
       </Button>
 
       {/* Event Header */}
-      <div className="relative h-48 sm:h-56 md:h-64 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg overflow-hidden">
+      <div className="relative h-48 sm:h-56 md:h-64 bg-linear-to-br from-blue-500 to-purple-600 rounded-lg overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white p-4 sm:p-6 md:p-8">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-4 break-words px-2">{event.name}</h1>
-            <p className="text-base sm:text-lg md:text-xl opacity-90">{event.location}</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-4 wrap-break-word px-2">
+              {event.name}
+            </h1>
+            <p className="text-base sm:text-lg md:text-xl opacity-90">
+              {event.location}
+            </p>
           </div>
         </div>
       </div>
@@ -49,10 +61,14 @@ export const EventDetail: React.FC<EventDetailProps> = ({ event, projects }) => 
         <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           <Card>
             <CardHeader className="p-4 sm:p-6">
-              <h2 className="text-xl sm:text-2xl font-bold">About This Event</h2>
+              <h2 className="text-xl sm:text-2xl font-bold">
+                About This Event
+              </h2>
             </CardHeader>
             <CardBody className="p-4 sm:p-6">
-              <p className="text-sm sm:text-base text-gray-700 whitespace-pre-wrap">{event.description}</p>
+              <p className="text-sm sm:text-base text-gray-700 whitespace-pre-wrap">
+                {event.description}
+              </p>
             </CardBody>
           </Card>
 
@@ -62,7 +78,9 @@ export const EventDetail: React.FC<EventDetailProps> = ({ event, projects }) => 
                 <h2 className="text-xl sm:text-2xl font-bold">Requirements</h2>
               </CardHeader>
               <CardBody className="p-4 sm:p-6">
-                <p className="text-sm sm:text-base text-gray-700 whitespace-pre-wrap">{event.requirements}</p>
+                <p className="text-sm sm:text-base text-gray-700 whitespace-pre-wrap">
+                  {event.requirements}
+                </p>
               </CardBody>
             </Card>
           )}
@@ -78,18 +96,20 @@ export const EventDetail: React.FC<EventDetailProps> = ({ event, projects }) => 
                   {event.prizes.map((prize, index) => (
                     <div
                       key={index}
-                      className="p-3 sm:p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200 transition-all duration-150 ease-in-out hover:shadow-md"
+                      className="p-3 sm:p-4 bg-linear-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200 transition-all duration-150 ease-in-out hover:shadow-md"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
                         <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                           {prize.title}
                         </h3>
-                        <span className="text-lg sm:text-xl font-bold text-orange-600 flex-shrink-0">
+                        <span className="text-lg sm:text-xl font-bold text-orange-600 shrink-0">
                           {prize.amount}
                         </span>
                       </div>
                       {prize.description && (
-                        <p className="text-sm sm:text-base text-gray-700">{prize.description}</p>
+                        <p className="text-sm sm:text-base text-gray-700">
+                          {prize.description}
+                        </p>
                       )}
                     </div>
                   ))}
@@ -123,7 +143,9 @@ export const EventDetail: React.FC<EventDetailProps> = ({ event, projects }) => 
                   </svg>
                   <span className="font-medium">Start Date</span>
                 </div>
-                <p className="text-gray-900 ml-7">{formatDate(event.startDate)}</p>
+                <p className="text-gray-900 ml-7">
+                  {formatDate(event.startDate)}
+                </p>
               </div>
 
               <div>
@@ -143,7 +165,9 @@ export const EventDetail: React.FC<EventDetailProps> = ({ event, projects }) => 
                   </svg>
                   <span className="font-medium">End Date</span>
                 </div>
-                <p className="text-gray-900 ml-7">{formatDate(event.endDate)}</p>
+                <p className="text-gray-900 ml-7">
+                  {formatDate(event.endDate)}
+                </p>
               </div>
 
               <div>
@@ -207,7 +231,9 @@ export const EventDetail: React.FC<EventDetailProps> = ({ event, projects }) => 
 
       {/* Projects Section */}
       <div>
-        <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Submitted Projects</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">
+          Submitted Projects
+        </h2>
         {projects.length === 0 ? (
           <EmptyState
             title="No Projects Yet"
@@ -216,37 +242,82 @@ export const EventDetail: React.FC<EventDetailProps> = ({ event, projects }) => 
             onAction={() => router.push(`/projects/submit?eventId=${event.id}`)}
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {projects.map((project) => (
-              <Card
-                key={project.id}
-                hover
-                className="cursor-pointer"
-                onClick={() => router.push(`/projects/${project.id}`)}
-              >
-                <CardBody className="p-4 sm:p-6">
-                  <h3 className="text-lg sm:text-xl font-bold mb-2">{project.name}</h3>
-                  <p className="text-sm sm:text-base text-gray-700 mb-4 line-clamp-3">
-                    {project.description}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                    {project.technologies.slice(0, 3).map((tech, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full transition-colors duration-150 ease-in-out"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                    {project.technologies.length > 3 && (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                        +{project.technologies.length - 3} more
-                      </span>
-                    )}
+          <div className="space-y-8">
+            {/* Prize Winners Section */}
+            {projects.some(
+              (p) => p.prizeAwards && p.prizeAwards.length > 0
+            ) && (
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-6 h-6 text-yellow-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      aria-hidden="true"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
+                      Prize Winners
+                    </h3>
                   </div>
-                </CardBody>
-              </Card>
-            ))}
+                  <div
+                    className="h-px flex-1 bg-linear-to-r from-yellow-300 to-transparent"
+                    aria-hidden="true"
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {projects
+                    .filter((p) => p.prizeAwards && p.prizeAwards.length > 0)
+                    .map((project) => (
+                      <ProjectCard
+                        key={project.id}
+                        project={project}
+                        onClick={() => router.push(`/projects/${project.id}`)}
+                        showPrizes={true}
+                        prioritizePrizes={true}
+                        prizes={event.prizes}
+                      />
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Other Projects Section */}
+            {projects.some(
+              (p) => !p.prizeAwards || p.prizeAwards.length === 0
+            ) && (
+              <div>
+                {projects.some(
+                  (p) => p.prizeAwards && p.prizeAwards.length > 0
+                ) && (
+                  <div className="flex items-center gap-3 mb-4">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
+                      Other Projects
+                    </h3>
+                    <div
+                      className="h-px flex-1 bg-gray-200"
+                      aria-hidden="true"
+                    />
+                  </div>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {projects
+                    .filter((p) => !p.prizeAwards || p.prizeAwards.length === 0)
+                    .map((project) => (
+                      <ProjectCard
+                        key={project.id}
+                        project={project}
+                        onClick={() => router.push(`/projects/${project.id}`)}
+                        showPrizes={false}
+                        prioritizePrizes={false}
+                        prizes={event.prizes}
+                      />
+                    ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
