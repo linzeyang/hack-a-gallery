@@ -9,6 +9,7 @@
 import { projectService } from "@/services/projectService";
 import { eventService } from "@/services/eventService";
 import { ProjectsClient } from "./ProjectsClient";
+import Link from "next/link";
 
 export default async function ProjectsPage() {
   // Fetch both projects and events data for search functionality
@@ -17,10 +18,38 @@ export default async function ProjectsPage() {
     eventService.getAll(),
   ]);
 
-  return (
-    <ProjectsClient
-      projects={projectsResult.data || []}
-      events={eventsResult.data || []}
-    />
-  );
+  // Handle case where projects data fails to load - this is critical
+  if (!projectsResult.success) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              Unable to Load Projects
+            </h1>
+            <p className="text-gray-600 mb-8">
+              {projectsResult.error || "Please try again later."}
+            </p>
+            <Link
+              href="/projects"
+              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Retry
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle case where events data fails to load gracefully - search will still work without event filtering
+  const projects = projectsResult.data || [];
+  const events = eventsResult.success ? eventsResult.data || [] : [];
+
+  // Log warning if events failed to load but continue with projects
+  if (!eventsResult.success) {
+    console.warn("Events data failed to load:", eventsResult.error);
+  }
+
+  return <ProjectsClient projects={projects} events={events} />;
 }

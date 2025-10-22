@@ -58,3 +58,28 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     );
   }
 }
+
+/**
+ * DELETE /api/events/[id] - Hide an event (soft delete)
+ */
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  try {
+    const { id } = await params;
+    const result = await eventService.hide(id);
+
+    if (result.success) {
+      return NextResponse.json({ message: "Event hidden successfully" });
+    }
+
+    return NextResponse.json(
+      { error: result.error || "Failed to hide event" },
+      { status: 400 }
+    );
+  } catch (error) {
+    console.error("Error hiding event:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
