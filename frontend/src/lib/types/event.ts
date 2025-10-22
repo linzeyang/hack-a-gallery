@@ -15,7 +15,10 @@ export interface Event {
 }
 
 export interface Prize {
+  id: string;
   title: string;
   amount: string;
   description: string;
+  maxWinners: number;
+  currentWinners: number;
 }

@@ -1,3 +1,5 @@
+import { PrizeAward } from './prize';
+
 export interface Project {
   id: string;
   eventId: string;
@@ -9,6 +11,8 @@ export interface Project {
   teamMembers: TeamMember[];
   hackerId: string;
   isHidden: boolean;
+  prizeAwards: PrizeAward[];
+  hasPrizes: boolean;
   createdAt: string;
   updatedAt: string;
 }
