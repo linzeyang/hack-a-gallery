@@ -1,16 +1,64 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { ProjectCard } from '@/components/features/ProjectCard';
-import { EmptyState } from '@/components/ui/EmptyState';
-import type { Project } from '@/lib/types/project';
+import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+
+import { SearchBar } from "@/components/features/SearchBar";
+import { FilterControls } from "@/components/features/FilterControls";
+import { SearchResults } from "@/components/features/SearchResults";
+import {
+  filterAndSortProjects,
+  extractUniqueTechnologies,
+  calculateEventCounts,
+} from "@/lib/utils/search";
+import type { Project } from "@/lib/types/project";
+import type { Event } from "@/lib/types/event";
 
 interface ProjectsClientProps {
   projects: Project[];
+  events: Event[];
 }
 
-export function ProjectsClient({ projects }: ProjectsClientProps) {
+export function ProjectsClient({ projects, events }: ProjectsClientProps) {
   const router = useRouter();
+
+  // Search state management
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTechnologies, setSelectedTechnologies] = useState<string[]>(
+    []
+  );
+  const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<"date" | "title" | "popularity">("date");
+
+  // Derived data with memoization
+  const availableTechnologies = useMemo(() => {
+    return extractUniqueTechnologies(projects).map((tech) => ({
+      id: tech,
+      name: tech,
+    }));
+  }, [projects]);
+
+  const eventsWithCounts = useMemo(() => {
+    return calculateEventCounts(events, projects);
+  }, [events, projects]);
+
+  // Filtered projects with memoization for efficient re-filtering
+  const filteredProjects = useMemo(() => {
+    return filterAndSortProjects(projects, {
+      searchTerm,
+      selectedTechnologies,
+      selectedEvents,
+      sortBy,
+    });
+  }, [projects, searchTerm, selectedTechnologies, selectedEvents, sortBy]);
+
+  // Clear all filters handler
+  const handleClearAll = () => {
+    setSearchTerm("");
+    setSelectedTechnologies([]);
+    setSelectedEvents([]);
+    setSortBy("date");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -24,24 +72,42 @@ export function ProjectsClient({ projects }: ProjectsClientProps) {
           </p>
         </div>
 
-        {projects.length === 0 ? (
-          <EmptyState
-            title="No Projects Yet"
-            description="Be the first to submit a project!"
-            actionLabel="Browse Events"
-            onAction={() => router.push('/events')}
+        {/* Search Interface */}
+        <div className="mb-8 space-y-6">
+          {/* Search Bar */}
+          <SearchBar
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="Search projects by name, description, or technology..."
+            className="max-w-2xl mx-auto"
           />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project) => (
-              <ProjectCard 
-                key={project.id} 
-                project={project}
-                onClick={() => router.push(`/projects/${project.id}`)}
-              />
-            ))}
-          </div>
-        )}
+
+          {/* Filter Controls */}
+          <FilterControls
+            technologies={availableTechnologies}
+            events={eventsWithCounts}
+            selectedTechnologies={selectedTechnologies}
+            selectedEvents={selectedEvents}
+            sortBy={sortBy}
+            onTechnologyChange={setSelectedTechnologies}
+            onEventChange={setSelectedEvents}
+            onSortChange={setSortBy}
+            onClearAll={handleClearAll}
+          />
+        </div>
+
+        {/* Search Results */}
+        <SearchResults
+          projects={filteredProjects}
+          searchTerm={searchTerm}
+          activeFilters={{
+            technologies: selectedTechnologies,
+            events: selectedEvents,
+            sortBy,
+          }}
+          totalCount={projects.length}
+          onProjectClick={(project) => router.push(`/projects/${project.id}`)}
+        />
       </div>
     </div>
   );

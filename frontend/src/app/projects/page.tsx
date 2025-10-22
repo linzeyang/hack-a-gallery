@@ -6,11 +6,21 @@
  * then gets projects for each event. Consider caching or pagination for production.
  */
 
-import { projectService } from '@/services/projectService';
-import { ProjectsClient } from './ProjectsClient';
+import { projectService } from "@/services/projectService";
+import { eventService } from "@/services/eventService";
+import { ProjectsClient } from "./ProjectsClient";
 
 export default async function ProjectsPage() {
-  const { data: projects } = await projectService.getAll();
+  // Fetch both projects and events data for search functionality
+  const [projectsResult, eventsResult] = await Promise.all([
+    projectService.getAll(),
+    eventService.getAll(),
+  ]);
 
-  return <ProjectsClient projects={projects || []} />;
+  return (
+    <ProjectsClient
+      projects={projectsResult.data || []}
+      events={eventsResult.data || []}
+    />
+  );
 }
