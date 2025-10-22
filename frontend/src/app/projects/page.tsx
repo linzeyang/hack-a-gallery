@@ -8,8 +8,10 @@
 
 import { projectService } from "@/services/projectService";
 import { eventService } from "@/services/eventService";
+import { prizeAwardService } from "@/services/prizeAwardService";
 import { ProjectsClient } from "./ProjectsClient";
 import Link from "next/link";
+import type { Project } from "@/lib/types/project";
 
 export default async function ProjectsPage() {
   // Fetch both projects and events data for search functionality
@@ -51,5 +53,23 @@ export default async function ProjectsPage() {
     console.warn("Events data failed to load:", eventsResult.error);
   }
 
-  return <ProjectsClient projects={projects} events={events} />;
+  // Enrich projects with prize awards data
+  const enrichedProjects: Project[] = await Promise.all(
+    projects.map(async (project) => {
+      const prizeAwardsResult = await prizeAwardService.getByProject(
+        project.id
+      );
+      const prizeAwards = prizeAwardsResult.success
+        ? prizeAwardsResult.data || []
+        : [];
+
+      return {
+        ...project,
+        prizeAwards,
+        hasPrizes: prizeAwards.length > 0,
+      };
+    })
+  );
+
+  return <ProjectsClient projects={enrichedProjects} events={events} />;
 }

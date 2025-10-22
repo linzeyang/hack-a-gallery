@@ -22,7 +22,9 @@ export type PrizeStatus = "winner" | "none";
  * ```
  */
 export function calculatePrizeStatus(project: Project): PrizeStatus {
-  return project.prizeAwards.length > 0 ? "winner" : "none";
+  return project.prizeAwards && project.prizeAwards.length > 0
+    ? "winner"
+    : "none";
 }
 
 /**
@@ -47,8 +49,8 @@ export function calculatePrizeStatus(project: Project): PrizeStatus {
  */
 export function sortProjectsByPrizeStatus(projects: Project[]): Project[] {
   return [...projects].sort((a, b) => {
-    const aHasPrizes = a.prizeAwards.length > 0;
-    const bHasPrizes = b.prizeAwards.length > 0;
+    const aHasPrizes = a.prizeAwards && a.prizeAwards.length > 0;
+    const bHasPrizes = b.prizeAwards && b.prizeAwards.length > 0;
 
     // Prize winners come first
     if (aHasPrizes && !bHasPrizes) return -1;
@@ -90,9 +92,11 @@ export function filterProjectsByPrizeStatus(
 ): Project[] {
   switch (status) {
     case "winners":
-      return projects.filter((p) => p.prizeAwards.length > 0);
+      return projects.filter((p) => p.prizeAwards && p.prizeAwards.length > 0);
     case "no-prizes":
-      return projects.filter((p) => p.prizeAwards.length === 0);
+      return projects.filter(
+        (p) => !p.prizeAwards || p.prizeAwards.length === 0
+      );
     case "all":
     default:
       return projects;
