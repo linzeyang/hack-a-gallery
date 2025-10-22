@@ -1,10 +1,35 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { eventService } from '@/services/eventService';
+import { NextRequest, NextResponse } from "next/server";
+import { eventService } from "@/services/eventService";
 
 interface RouteParams {
   params: Promise<{
     id: string;
   }>;
+}
+
+/**
+ * GET /api/events/[id] - Get a specific event
+ */
+export async function GET(request: NextRequest, { params }: RouteParams) {
+  try {
+    const { id } = await params;
+    const result = await eventService.getById(id);
+
+    if (result.success && result.data) {
+      return NextResponse.json(result.data);
+    }
+
+    return NextResponse.json(
+      { error: result.error || "Event not found" },
+      { status: result.error?.includes("not found") ? 404 : 400 }
+    );
+  } catch (error) {
+    console.error("Error retrieving event:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }
 
 /**
@@ -14,7 +39,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
     const body = await request.json();
-    
+
     const result = await eventService.update(id, body);
 
     if (result.success && result.data) {
@@ -22,13 +47,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     return NextResponse.json(
-      { error: result.error || 'Failed to update event' },
+      { error: result.error || "Failed to update event" },
       { status: 400 }
     );
   } catch (error) {
-    console.error('Error updating event:', error);
+    console.error("Error updating event:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

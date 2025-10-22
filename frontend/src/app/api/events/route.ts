@@ -1,5 +1,29 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { eventService } from '@/services/eventService';
+import { NextRequest, NextResponse } from "next/server";
+import { eventService } from "@/services/eventService";
+
+/**
+ * GET /api/events - Get all events
+ */
+export async function GET() {
+  try {
+    const result = await eventService.getAll();
+
+    if (result.success) {
+      return NextResponse.json(result.data);
+    }
+
+    return NextResponse.json(
+      { error: result.error || "Failed to retrieve events" },
+      { status: 400 }
+    );
+  } catch (error) {
+    console.error("Error retrieving events:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
 
 /**
  * POST /api/events - Create a new event
@@ -14,13 +38,13 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: result.error || 'Failed to create event' },
+      { error: result.error || "Failed to create event" },
       { status: 400 }
     );
   } catch (error) {
-    console.error('Error creating event:', error);
+    console.error("Error creating event:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
