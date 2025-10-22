@@ -14,6 +14,7 @@
  * Key Patterns:
  * - Events: PK="EVENT#{eventId}", SK="METADATA"
  * - Projects: PK="EVENT#{eventId}", SK="PROJECT#{projectId}"
+ * - Prize Awards: PK="EVENT#{eventId}", SK="PRIZE-AWARD#{prizeId}#{projectId}"
  * - Users: PK="USER#{userId}", SK="METADATA"
  */
 
@@ -152,6 +153,8 @@ export class DynamoDBAdapter implements IStorageAdapter {
         entityType = "Event";
       } else if (PK.startsWith("EVENT#") && SK.startsWith("PROJECT#")) {
         entityType = "Project";
+      } else if (PK.startsWith("EVENT#") && SK.startsWith("PRIZE-AWARD#")) {
+        entityType = "PrizeAward";
       } else if (PK.startsWith("USER#")) {
         entityType = "User";
       }
@@ -374,6 +377,45 @@ export class DynamoDBAdapter implements IStorageAdapter {
 
           // Use Query with PK and SK begins_with
           await this.queryWithPagination(PK, skPrefix, items);
+        } else if (entityType === "prize-award") {
+          // prize-award:evt_123: → All awards for event
+          const eventId = parts[1];
+          const PK = `EVENT#${eventId}`;
+          const skPrefix = "PRIZE-AWARD#";
+
+          this.log("info", `Using Query strategy for prize-award event query`, {
+            prefix,
+            PK,
+            skPrefix,
+            entityType,
+          });
+
+          // Use Query with PK and SK begins_with
+          await this.queryWithPagination(PK, skPrefix, items);
+        } else {
+          throw new Error(
+            `Unsupported prefix format for ${entityType}: "${prefix}"`
+          );
+        }
+      }
+      // Strategy 3: Prize-award specific prize queries (e.g., "prize-award:evt_123:prize_1:")
+      else if (parts.length === 3 || (parts.length === 4 && parts[3] === "")) {
+        if (entityType === "prize-award") {
+          // prize-award:evt_123:prize_1: → All awards for specific prize
+          const eventId = parts[1];
+          const prizeId = parts[2];
+          const PK = `EVENT#${eventId}`;
+          const skPrefix = `PRIZE-AWARD#${prizeId}#`;
+
+          this.log("info", `Using Query strategy for prize-award prize query`, {
+            prefix,
+            PK,
+            skPrefix,
+            entityType,
+          });
+
+          // Use Query with PK and SK begins_with
+          await this.queryWithPagination(PK, skPrefix, items);
         } else {
           throw new Error(
             `Unsupported prefix format for ${entityType}: "${prefix}"`
@@ -407,6 +449,7 @@ export class DynamoDBAdapter implements IStorageAdapter {
    * Key Format Examples:
    * - "event:evt_123" → PK: "EVENT#evt_123", SK: "METADATA"
    * - "project:evt_123:proj_789" → PK: "EVENT#evt_123", SK: "PROJECT#proj_789"
+   * - "prize-award:evt_123:prize_1:proj_456" → PK: "EVENT#evt_123", SK: "PRIZE-AWARD#prize_1#proj_456"
    * - "user:user_101" → PK: "USER#user_101", SK: "METADATA"
    *
    * @param key - Storage key in format "entityType:id" or "entityType:parentId:childId"
@@ -461,9 +504,21 @@ export class DynamoDBAdapter implements IStorageAdapter {
           `Invalid user key format: "${key}". Expected: "user:userId"`
         );
 
+      case "prize-award":
+        // prize-award:evt_123:prize_1:proj_456 → PK: EVENT#evt_123, SK: PRIZE-AWARD#prize_1#proj_456
+        if (parts.length === 4) {
+          return {
+            PK: `EVENT#${parts[1]}`,
+            SK: `PRIZE-AWARD#${parts[2]}#${parts[3]}`,
+          };
+        }
+        throw new Error(
+          `Invalid prize-award key format: "${key}". Expected: "prize-award:eventId:prizeId:projectId"`
+        );
+
       default:
         throw new Error(
-          `Unknown entity type: "${entityType}". Supported types: event, project, user`
+          `Unknown entity type: "${entityType}". Supported types: event, project, user, prize-award`
         );
     }
   }
@@ -476,6 +531,7 @@ export class DynamoDBAdapter implements IStorageAdapter {
    * Examples:
    * - PK: "EVENT#evt_123", SK: "METADATA" → "event:evt_123"
    * - PK: "EVENT#evt_123", SK: "PROJECT#proj_789" → "project:evt_123:proj_789"
+   * - PK: "EVENT#evt_123", SK: "PRIZE-AWARD#prize_1#proj_456" → "prize-award:evt_123:prize_1:proj_456"
    * - PK: "USER#user_101", SK: "METADATA" → "user:user_101"
    *
    * @param PK - DynamoDB partition key
@@ -504,6 +560,16 @@ export class DynamoDBAdapter implements IStorageAdapter {
       // Project entity
       const projectId = SK.substring(8); // Remove "PROJECT#" prefix
       return `project:${pkId}:${projectId}`;
+    } else if (SK.startsWith("PRIZE-AWARD#")) {
+      // Prize award entity
+      // SK format: PRIZE-AWARD#prizeId#projectId
+      const skParts = SK.split("#");
+      if (skParts.length === 3) {
+        const prizeId = skParts[1];
+        const projectId = skParts[2];
+        return `prize-award:${pkId}:${prizeId}:${projectId}`;
+      }
+      throw new Error(`Invalid PRIZE-AWARD SK format: "${SK}"`);
     }
 
     throw new Error(`Unable to build key from PK: "${PK}", SK: "${SK}"`);
@@ -515,6 +581,7 @@ export class DynamoDBAdapter implements IStorageAdapter {
    * GSI1 Access Patterns:
    * - Events by organizer: GSI1PK="ORGANIZER#{organizerId}", GSI1SK="EVENT#{eventId}"
    * - Projects by hacker: GSI1PK="HACKER#{hackerId}", GSI1SK="PROJECT#{projectId}"
+   * - Prize awards by project: GSI1PK="PROJECT#{projectId}", GSI1SK="PRIZE-AWARD#{prizeId}"
    * - Users by email: GSI1PK="EMAIL#{email}", GSI1SK="USER#{userId}"
    *
    * GSI2 Access Patterns:
@@ -550,6 +617,15 @@ export class DynamoDBAdapter implements IStorageAdapter {
       if (hackerId && projectId) {
         gsiKeys.GSI1PK = `HACKER#${hackerId}`;
         gsiKeys.GSI1SK = `PROJECT#${projectId}`;
+      }
+    } else if (PK.startsWith("EVENT#") && SK.startsWith("PRIZE-AWARD#")) {
+      // Prize award entity - GSI1 for project access
+      const projectId = item.projectId as string | undefined;
+      const prizeId = item.prizeId as string | undefined;
+
+      if (projectId && prizeId) {
+        gsiKeys.GSI1PK = `PROJECT#${projectId}`;
+        gsiKeys.GSI1SK = `PRIZE-AWARD#${prizeId}`;
       }
     } else if (PK.startsWith("USER#") && SK === "METADATA") {
       // User entity - GSI1 for email access, GSI2 for role access
