@@ -49,14 +49,20 @@ const sampleEvents = [
     location: "MIT Campus, Cambridge, MA",
     prizes: [
       {
+        id: "prize_evt_001_0",
         title: "First Place",
         amount: "$10,000",
         description: "Best overall project",
+        maxWinners: 1,
+        currentWinners: 0,
       },
       {
+        id: "prize_evt_001_1",
         title: "Best AI Project",
         amount: "$5,000",
         description: "Most innovative use of AI/ML",
+        maxWinners: 2,
+        currentWinners: 0,
       },
     ],
     requirements: "Must be a current student with valid student ID",
@@ -80,9 +86,12 @@ const sampleEvents = [
     location: "Stanford University, Palo Alto, CA",
     prizes: [
       {
+        id: "prize_evt_002_0",
         title: "Grand Prize",
         amount: "$15,000",
         description: "Best overall hack",
+        maxWinners: 1,
+        currentWinners: 0,
       },
     ],
     requirements: "Open to all university students",
@@ -155,12 +164,38 @@ const sampleProjects = [
     updatedAt: "2024-09-16T16:45:00Z",
   },
   {
-    PK: "EVENT#evt_002",
+    PK: "EVENT#evt_001",
     SK: "PROJECT#proj_003",
-    GSI1PK: "HACKER#user_hacker_003",
+    GSI1PK: "HACKER#user_hacker_004",
     GSI1SK: "PROJECT#proj_003",
     entityType: "Project",
     id: "proj_003",
+    eventId: "evt_001",
+    name: "CodeMentor AI",
+    description: "AI-powered code review and mentoring platform for developers",
+    githubUrl: "https://github.com/team/codementor-ai",
+    demoUrl: "https://codementor-ai.demo.com",
+    technologies: ["Vue.js", "Python", "TensorFlow", "Docker"],
+    teamMembers: [
+      {
+        name: "Frank Wilson",
+        role: "Full Stack Developer",
+        githubUsername: "frankwilson",
+        userId: "user_hacker_004",
+      },
+    ],
+    hackerId: "user_hacker_004",
+    isHidden: false,
+    createdAt: "2024-09-16T18:00:00Z",
+    updatedAt: "2024-09-16T18:00:00Z",
+  },
+  {
+    PK: "EVENT#evt_002",
+    SK: "PROJECT#proj_004",
+    GSI1PK: "HACKER#user_hacker_003",
+    GSI1SK: "PROJECT#proj_004",
+    entityType: "Project",
+    id: "proj_004",
     eventId: "evt_002",
     name: "HealthHub",
     description:
@@ -186,6 +221,100 @@ const sampleProjects = [
     createdAt: "2024-10-21T11:20:00Z",
     updatedAt: "2024-10-21T11:20:00Z",
   },
+  {
+    PK: "EVENT#evt_002",
+    SK: "PROJECT#proj_005",
+    GSI1PK: "HACKER#user_hacker_005",
+    GSI1SK: "PROJECT#proj_005",
+    entityType: "Project",
+    id: "proj_005",
+    eventId: "evt_002",
+    name: "SmartScheduler",
+    description: "AI-powered scheduling assistant that optimizes meeting times",
+    githubUrl: "https://github.com/team/smartscheduler",
+    demoUrl: "https://smartscheduler.demo.com",
+    technologies: ["React", "Node.js", "MongoDB", "Google Calendar API"],
+    teamMembers: [
+      {
+        name: "Grace Lee",
+        role: "Full Stack Developer",
+        githubUsername: "gracelee",
+        userId: "user_hacker_005",
+      },
+    ],
+    hackerId: "user_hacker_005",
+    isHidden: false,
+    createdAt: "2024-10-21T13:00:00Z",
+    updatedAt: "2024-10-21T13:00:00Z",
+  },
+];
+
+// Sample prize awards
+// Demonstrates:
+// - Single-winner prizes (First Place)
+// - Multiple winners for same prize (Best AI Project has 2 winners)
+// - Projects with multiple prizes (proj_001 wins both First Place and Best AI)
+// - Projects without prizes (proj_002, proj_005)
+const samplePrizeAwards = [
+  // Event 1 (evt_001) - HackMIT 2024
+  // proj_001 wins First Place (single winner)
+  {
+    PK: "EVENT#evt_001",
+    SK: "PRIZE-AWARD#prize_evt_001_0#proj_001",
+    GSI1PK: "PROJECT#proj_001",
+    GSI1SK: "PRIZE-AWARD#prize_evt_001_0",
+    entityType: "PrizeAward",
+    id: "award_001",
+    projectId: "proj_001",
+    prizeId: "prize_evt_001_0",
+    eventId: "evt_001",
+    awardedAt: "2024-09-17T19:00:00Z",
+    awardedBy: "user_org_001",
+  },
+  // proj_001 also wins Best AI Project (first of 2 winners)
+  {
+    PK: "EVENT#evt_001",
+    SK: "PRIZE-AWARD#prize_evt_001_1#proj_001",
+    GSI1PK: "PROJECT#proj_001",
+    GSI1SK: "PRIZE-AWARD#prize_evt_001_1",
+    entityType: "PrizeAward",
+    id: "award_002",
+    projectId: "proj_001",
+    prizeId: "prize_evt_001_1",
+    eventId: "evt_001",
+    awardedAt: "2024-09-17T19:15:00Z",
+    awardedBy: "user_org_001",
+  },
+  // proj_003 wins Best AI Project (second of 2 winners)
+  {
+    PK: "EVENT#evt_001",
+    SK: "PRIZE-AWARD#prize_evt_001_1#proj_003",
+    GSI1PK: "PROJECT#proj_003",
+    GSI1SK: "PRIZE-AWARD#prize_evt_001_1",
+    entityType: "PrizeAward",
+    id: "award_003",
+    projectId: "proj_003",
+    prizeId: "prize_evt_001_1",
+    eventId: "evt_001",
+    awardedAt: "2024-09-17T19:15:00Z",
+    awardedBy: "user_org_001",
+  },
+  // Event 2 (evt_002) - Stanford TreeHacks 2024
+  // proj_004 wins Grand Prize (single winner)
+  {
+    PK: "EVENT#evt_002",
+    SK: "PRIZE-AWARD#prize_evt_002_0#proj_004",
+    GSI1PK: "PROJECT#proj_004",
+    GSI1SK: "PRIZE-AWARD#prize_evt_002_0",
+    entityType: "PrizeAward",
+    id: "award_004",
+    projectId: "proj_004",
+    prizeId: "prize_evt_002_0",
+    eventId: "evt_002",
+    awardedAt: "2024-10-22T21:00:00Z",
+    awardedBy: "user_org_002",
+  },
+  // Note: proj_002 and proj_005 have no prizes (for filtering demo)
 ];
 
 async function seedData() {
@@ -199,9 +328,31 @@ async function seedData() {
   console.log("");
 
   try {
+    // Update prize currentWinners counts based on awards
+    const prizeWinnerCounts = {};
+    for (const award of samplePrizeAwards) {
+      const key = `${award.eventId}:${award.prizeId}`;
+      prizeWinnerCounts[key] = (prizeWinnerCounts[key] || 0) + 1;
+    }
+
+    // Update events with currentWinners counts
+    const eventsWithUpdatedPrizes = sampleEvents.map((event) => {
+      const updatedPrizes = event.prizes.map((prize) => {
+        const key = `${event.id}:${prize.id}`;
+        return {
+          ...prize,
+          currentWinners: prizeWinnerCounts[key] || 0,
+        };
+      });
+      return {
+        ...event,
+        prizes: updatedPrizes,
+      };
+    });
+
     // Seed events
-    console.log(`Seeding ${sampleEvents.length} events...`);
-    for (const event of sampleEvents) {
+    console.log(`Seeding ${eventsWithUpdatedPrizes.length} events...`);
+    for (const event of eventsWithUpdatedPrizes) {
       await docClient.send(
         new PutCommand({
           TableName: TABLE_NAME,
@@ -226,13 +377,36 @@ async function seedData() {
     }
 
     console.log("");
+
+    // Seed prize awards
+    console.log(`Seeding ${samplePrizeAwards.length} prize awards...`);
+    for (const award of samplePrizeAwards) {
+      await docClient.send(
+        new PutCommand({
+          TableName: TABLE_NAME,
+          Item: award,
+        })
+      );
+      console.log(
+        `  ✓ Created prize award: Project ${award.projectId} won prize ${award.prizeId}`
+      );
+    }
+
+    console.log("");
     console.log("=".repeat(60));
     console.log("Seeding Complete!");
     console.log("=".repeat(60));
     console.log("");
     console.log("Sample data created:");
-    console.log(`  - ${sampleEvents.length} events`);
+    console.log(`  - ${eventsWithUpdatedPrizes.length} events`);
     console.log(`  - ${sampleProjects.length} projects`);
+    console.log(`  - ${samplePrizeAwards.length} prize awards`);
+    console.log("");
+    console.log("Prize award examples:");
+    console.log("  - proj_001: 2 prizes (First Place + Best AI Project)");
+    console.log("  - proj_003: 1 prize (Best AI Project)");
+    console.log("  - proj_004: 1 prize (Grand Prize)");
+    console.log("  - proj_002, proj_005: No prizes (for filtering demo)");
     console.log("");
     console.log("You can now query your table:");
     console.log(
