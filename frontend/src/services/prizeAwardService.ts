@@ -117,8 +117,7 @@ class PrizeAwardService implements IPrizeAwardService {
    * Get all prize awards for a specific project
    *
    * Uses GSI1 query pattern: GSI1PK = PROJECT#projectId
-   * Note: Since GSI queries aren't directly exposed, we query all events
-   * and filter by projectId. This could be optimized in the future.
+   * This is optimized to query directly using the GSI instead of scanning all events.
    */
   async getByProject(
     projectId: string
@@ -126,6 +125,22 @@ class PrizeAwardService implements IPrizeAwardService {
     try {
       this.log("info", `Getting prize awards for project: ${projectId}`);
 
+      // Check if storage adapter supports GSI queries
+      if (this.storage.queryGSI) {
+        // Optimized path: Query GSI1 directly
+        const awards = await this.storage.queryGSI<PrizeAward>(
+          "GSI1",
+          `PROJECT#${projectId}`,
+          "PRIZE-AWARD#"
+        );
+
+        return {
+          success: true,
+          data: awards,
+        };
+      }
+
+      // Fallback path for adapters without GSI support (e.g., localStorage)
       // Get all events to query their prize awards
       const { eventService } = await import("./eventService");
       const eventsResult = await eventService.getAll();

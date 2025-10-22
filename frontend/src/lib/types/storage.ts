@@ -1,9 +1,9 @@
 /**
  * Storage Adapter Interface
- * 
+ *
  * Generic interface for storage operations that can be implemented
  * by different storage backends (localStorage, API, S3, DynamoDB, etc.)
- * 
+ *
  * This abstraction allows seamless migration from localStorage to
  * cloud storage without changing service layer code.
  */
@@ -39,4 +39,17 @@ export interface IStorageAdapter {
    * @returns Promise resolving to array of matching values
    */
   getAll<T>(prefix: string): Promise<T[]>;
+
+  /**
+   * Query items using a Global Secondary Index (GSI)
+   * @param gsiName - Name of the GSI to query (e.g., "GSI1")
+   * @param partitionKey - GSI partition key value
+   * @param sortKeyPrefix - Optional GSI sort key prefix for filtering
+   * @returns Promise resolving to array of matching values
+   */
+  queryGSI?<T>(
+    gsiName: string,
+    partitionKey: string,
+    sortKeyPrefix?: string
+  ): Promise<T[]>;
 }

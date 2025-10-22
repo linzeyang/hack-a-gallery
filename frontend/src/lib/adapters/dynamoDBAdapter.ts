@@ -444,6 +444,106 @@ export class DynamoDBAdapter implements IStorageAdapter {
   }
 
   /**
+   * Query items using a Global Secondary Index (GSI)
+   *
+   * Optimized for querying items by alternate access patterns without scanning.
+   * Example: Get all prize awards for a specific project using GSI1.
+   *
+   * @param gsiName - Name of the GSI to query (e.g., "GSI1", "GSI2")
+   * @param partitionKey - GSI partition key value (e.g., "PROJECT#proj_123")
+   * @param sortKeyPrefix - Optional GSI sort key prefix for filtering (e.g., "PRIZE-AWARD#")
+   * @returns Promise resolving to array of matching items
+   */
+  async queryGSI<T>(
+    gsiName: string,
+    partitionKey: string,
+    sortKeyPrefix?: string
+  ): Promise<T[]> {
+    try {
+      this.log(
+        "info",
+        `Querying ${gsiName} with partition key: ${partitionKey}`,
+        {
+          sortKeyPrefix,
+        }
+      );
+
+      const items: T[] = [];
+      let lastEvaluatedKey: Record<string, unknown> | undefined;
+
+      // Build query parameters
+      const queryParams: {
+        TableName: string;
+        IndexName: string;
+        KeyConditionExpression: string;
+        ExpressionAttributeNames: Record<string, string>;
+        ExpressionAttributeValues: Record<string, string>;
+        ExclusiveStartKey?: Record<string, unknown>;
+      } = {
+        TableName: this.tableName,
+        IndexName: gsiName,
+        KeyConditionExpression: sortKeyPrefix
+          ? "#pk = :pk AND begins_with(#sk, :sk)"
+          : "#pk = :pk",
+        ExpressionAttributeNames: {
+          "#pk": `${gsiName}PK`,
+          ...(sortKeyPrefix && { "#sk": `${gsiName}SK` }),
+        },
+        ExpressionAttributeValues: {
+          ":pk": partitionKey,
+          ...(sortKeyPrefix && { ":sk": sortKeyPrefix }),
+        },
+      };
+
+      // Paginate through results
+      do {
+        if (lastEvaluatedKey) {
+          queryParams.ExclusiveStartKey = lastEvaluatedKey;
+        }
+
+        const result = await this.executeWithRetry(async () => {
+          const command = new QueryCommand(queryParams);
+          return await this.docClient.send(command);
+        });
+
+        if (result.Items) {
+          for (const item of result.Items) {
+            // Remove DynamoDB-specific keys
+            const cleanItem = { ...item };
+            delete cleanItem.PK;
+            delete cleanItem.SK;
+            delete cleanItem.GSI1PK;
+            delete cleanItem.GSI1SK;
+            delete cleanItem.GSI2PK;
+            delete cleanItem.GSI2SK;
+            delete cleanItem.entityType;
+
+            items.push(cleanItem as T);
+          }
+        }
+
+        lastEvaluatedKey = result.LastEvaluatedKey;
+      } while (lastEvaluatedKey);
+
+      this.log("info", `Retrieved ${items.length} items from ${gsiName}`, {
+        partitionKey,
+        sortKeyPrefix,
+        itemCount: items.length,
+      });
+
+      return items;
+    } catch (error) {
+      this.log("error", `Failed to query ${gsiName}`, {
+        error,
+        partitionKey,
+        sortKeyPrefix,
+        operation: "queryGSI",
+      });
+      throw error;
+    }
+  }
+
+  /**
    * Parse a storage key into DynamoDB partition key (PK) and sort key (SK)
    *
    * Key Format Examples:
