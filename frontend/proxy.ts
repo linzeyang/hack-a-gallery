@@ -5,7 +5,7 @@ import { validateSecurityConfiguration } from "@/lib/config/aws";
 // This middleware runs on every request, but validation is cached
 let securityValidated = false;
 
-export function middleware(_request: NextRequest) {
+export function proxy(_request: NextRequest) {
   // Only run security validation once during application startup
   if (!securityValidated) {
     try {
