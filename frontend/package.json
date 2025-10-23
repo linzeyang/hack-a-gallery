@@ -35,13 +35,13 @@
     "@types/node": "^20",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
-    "@vitest/ui": "^3.2.4",
+    "@vitest/ui": "^4",
     "dynamodb-local": "^0.0.35",
     "eslint": "^9",
     "eslint-config-next": "16.0.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^3.2.4"
+    "vitest": "^4"
   },
   "overrides": {
     "@types/react": "19.2.2",
