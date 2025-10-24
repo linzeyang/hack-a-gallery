@@ -8,37 +8,40 @@ fileMatchPattern: "frontend/**/*"
 ## Project Overview
 
 **Project**: HackaGallery - AI-powered hackathon project showcase platform  
-**Framework**: Next.js 15.5.5 with React 19.1.0  
+**Framework**: Next.js 16.0.0 with React 19.2.0  
 **Language**: TypeScript 5  
 **Styling**: TailwindCSS 4  
 **Deployment**: AWS Amplify
 
 ## Core Technology Stack
 
-### Dependencies (Locked Versions)
+### Dependencies (Current Versions)
 
-- **Next.js**: 15.5.5 (with Turbopack enabled)
-- **React**: 19.1.0
-- **React DOM**: 19.1.0
+- **Next.js**: 16.0.0
+- **React**: 19.2.0
+- **React DOM**: 19.2.0
 - **TypeScript**: ^5
 - **TailwindCSS**: ^4
 - **ESLint**: ^9 with eslint-config-next
+- **AWS SDK**: ^3.709.0 (DynamoDB client)
+- **Vitest**: ^4 (testing framework)
 
 ### Build Configuration
 
-- Use `--turbopack` flag for dev and build (already configured in package.json)
+- Turbopack is now the default bundler in Next.js 16 (no flag needed)
 - Target: ES2017
 - Module Resolution: bundler
 - Path alias: `@/*` maps to `./src/*`
 
 ## Architecture Principles
 
-### 1. App Router (Next.js 15)
+### 1. App Router (Next.js 16)
 
 - Use App Router exclusively (not Pages Router)
 - File-based routing in `src/app/`
 - Server Components by default
 - Client Components only when needed (use `'use client'` directive)
+- **CRITICAL**: All dynamic route params and searchParams are now async (must be awaited)
 
 ### 2. Component Structure
 
@@ -77,40 +80,41 @@ src/
 - React hooks (useState, useEffect, etc.)
 - Event listeners
 
-### 4. Storage Architecture & Migration Path
+### 4. Storage Architecture (DynamoDB)
 
-**Phase 1 (MVP - Current)**: localStorage
+**Current State**: DynamoDB with AWS SDK
 
-- Pages using data storage MUST be Client Components (`"use client"`)
-- Data fetched client-side with `useEffect`
-- No SSR for data-driven pages (localStorage only works in browser)
-- Affected pages: `/events`, `/events/[id]`, `/projects`, `/projects/[id]`
+- **Server Components**: Fetch data directly using services (e.g., `eventService.getAll()`)
+- **Client Components**: Never call services directly - use API routes instead
+- **Write Operations**: Always use API routes (`/api/events`, `/api/projects`)
+- **Environment Variables**: Server-side only (no `NEXT_PUBLIC_` prefix for secrets)
 
-**Phase 2 (Production - Future)**: AWS/API Storage
-
-- Pages will become Server Components (remove `"use client"`)
-- Data fetched server-side with `async/await`
-- Full SSR benefits: better performance, SEO, static generation
-- Only storage adapter changes - service layer remains unchanged
-
-**Key Principle**: The Client Component approach for localStorage is **correct and temporary**. The architecture is designed for easy migration to AWS with minimal code changes.
-
-**Migration Documentation**: See `frontend/docs/STORAGE_MIGRATION_GUIDE.md` for detailed migration steps.
-
-**Storage Adapter Pattern**:
+**Critical Pattern**:
 
 ```typescript
-// Service layer (never changes)
-const { data } = await eventService.getAll();
+// ✅ CORRECT: Server Component fetches data
+export default async function EventsPage() {
+  const { data: events } = await eventService.getAll();
+  return <EventsClient events={events || []} />;
+}
 
-// Storage adapter (swappable)
-export function getStorageAdapter(): IStorageAdapter {
-  if (process.env.NEXT_PUBLIC_USE_AWS === "true") {
-    return new AwsStorageAdapter(); // Phase 2
-  }
-  return new LocalStorageAdapter(); // Phase 1
+// ❌ WRONG: Client Component with useEffect
+("use client");
+export default function EventsPage() {
+  useEffect(() => {
+    // This fails! DynamoDB needs server-side env vars
+    eventService.getAll().then(setEvents);
+  }, []);
 }
 ```
+
+**DynamoDB Key Patterns**:
+
+- Events: `event:eventId` → PK: `EVENT#eventId`, SK: `METADATA`
+- Projects: `project:eventId:projectId` → PK: `EVENT#eventId`, SK: `PROJECT#projectId`
+- Use hierarchical keys for efficient queries and relationships
+
+**See Also**: `.kiro/steering/dynamodb-backend-patterns.md` for complete DynamoDB integration patterns
 
 ## Code Standards
 
@@ -139,18 +143,19 @@ type ProjectCardProps = {
 
 ### Component Patterns
 
-**Server Component Example**:
+**Server Component Example (Next.js 16)**:
 
 ```typescript
 // app/projects/page.tsx
-import { getProjects } from "@/lib/api/projects";
+import { projectService } from "@/services/projectService";
 
 export default async function ProjectsPage() {
-  const projects = await getProjects();
+  // Direct service call in Server Component
+  const { data: projects } = await projectService.getAll();
 
   return (
     <div>
-      {projects.map((project) => (
+      {(projects || []).map((project) => (
         <ProjectCard key={project.id} project={project} />
       ))}
     </div>
@@ -210,40 +215,60 @@ export function Card({ children, className = "" }: CardProps) {
 
 ### Backend Communication
 
-- API endpoints will be AWS Lambda functions via API Gateway
-- Use `fetch` in Server Components for data fetching
-- Use React Query or SWR for Client Component data fetching
-- Store API base URL in environment variables
+**Current Architecture**: Next.js API Routes + DynamoDB
+
+- **Read Operations**: Server Components call services directly
+- **Write Operations**: Client Components call API routes
+- **API Routes**: Located in `app/api/` directory
+- **Services**: Located in `src/services/` directory
 
 ```typescript
-// lib/api/client.ts
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+// app/api/events/route.ts - API Route for mutations
+import { eventService } from "@/services/eventService";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function apiClient<T>(
-  endpoint: string,
-  options?: RequestInit
-): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const result = await eventService.create(body);
+
+    if (result.success) {
+      return NextResponse.json(result.data, { status: 201 });
+    }
+    return NextResponse.json({ error: result.error }, { status: 400 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+```typescript
+// Client Component calls API route
+"use client";
+
+async function handleSubmit(data: EventFormData) {
+  const response = await fetch("/api/events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
   });
 
-  if (!response.ok) {
-    throw new Error(`API Error: ${response.statusText}`);
+  if (response.ok) {
+    const event = await response.json();
+    router.push(`/events/${event.id}`);
   }
-
-  return response.json();
 }
 ```
 
 ### AWS Integration
 
-- Use AWS Amplify for authentication (future phase)
-- S3 for file uploads (project assets, images)
-- CloudFront URLs for media delivery
+- **DynamoDB**: Primary database (AWS SDK v3)
+- **Authentication**: AWS Amplify (future phase)
+- **File Storage**: S3 for uploads (future phase)
+- **CDN**: CloudFront for media delivery (future phase)
 
 ## Data Types
 
@@ -419,10 +444,26 @@ export default function Loading() {
 Create `.env.local` for local development:
 
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_AWS_REGION=us-east-1
-NEXT_PUBLIC_S3_BUCKET=hackagallery-assets
+# Server-side only (no NEXT_PUBLIC_ prefix)
+DYNAMODB_TABLE_NAME=hackagallery-dev
+AWS_REGION=us-west-2
+AWS_ACCESS_KEY_ID=AKIA...
+AWS_SECRET_ACCESS_KEY=...
+
+# Client-side (NEXT_PUBLIC_ prefix)
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_USE_LOCALSTORAGE=false
 ```
+
+**Critical Rules**:
+
+- **Server-side vars**: No `NEXT_PUBLIC_` prefix (secrets, DB credentials)
+- **Client-side vars**: Must have `NEXT_PUBLIC_` prefix (public config)
+- **Never expose secrets**: Don't prefix sensitive data with `NEXT_PUBLIC_`
+- **Access patterns**:
+  - Server Components: Can access all env vars
+  - API Routes: Can access all env vars
+  - Client Components: Can only access `NEXT_PUBLIC_*` vars
 
 ## Testing Strategy (Future)
 
@@ -487,39 +528,113 @@ export function ProjectForm() {
 }
 ```
 
-### Data Fetching Pattern
+### Data Fetching Pattern (Next.js 16)
 
 ```typescript
-// Server Component
-async function getProjectById(id: string) {
-  const project = await apiClient<Project>(`/projects/${id}`);
-  return project;
+// Server Component with async params
+import { projectService } from "@/services/projectService";
+
+interface ProjectPageProps {
+  params: Promise<{ id: string }>; // ⚠️ Promise in Next.js 16!
 }
 
-export default async function ProjectPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const project = await getProjectById(params.id);
+export default async function ProjectPage({ params }: ProjectPageProps) {
+  // ⚠️ Must await params in Next.js 16
+  const { id } = await params;
+
+  // Direct service call
+  const { data: project } = await projectService.getById(id);
+
+  if (!project) {
+    return <div>Project not found</div>;
+  }
 
   return <ProjectDetail project={project} />;
 }
 ```
 
+**Next.js 16 Breaking Change**: All dynamic route params and searchParams are now Promises and must be awaited:
+
+```typescript
+// ✅ CORRECT (Next.js 16)
+interface PageProps {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ query?: string }>;
+}
+
+export default async function Page({ params, searchParams }: PageProps) {
+  const { id } = await params;
+  const { query } = await searchParams;
+}
+
+// ❌ WRONG (Next.js 15 style - will cause warnings)
+interface PageProps {
+  params: { id: string };
+  searchParams: { query?: string };
+}
+
+export default async function Page({ params, searchParams }: PageProps) {
+  const { id } = params; // Not awaited!
+}
+```
+
+## Next.js 16 Specific Features
+
+### Async Request APIs
+
+All request-related APIs are now async in Next.js 16:
+
+```typescript
+// params - Dynamic route parameters
+const { id } = await params;
+
+// searchParams - URL query parameters
+const { query } = await searchParams;
+
+// cookies - Request cookies (in Server Components/API routes)
+import { cookies } from "next/headers";
+const cookieStore = await cookies();
+const token = cookieStore.get("token");
+
+// headers - Request headers (in Server Components/API routes)
+import { headers } from "next/headers";
+const headersList = await headers();
+const userAgent = headersList.get("user-agent");
+```
+
+### Turbopack (Default)
+
+- Turbopack is now the default bundler (no configuration needed)
+- Faster builds and hot module replacement
+- Better error messages and debugging
+
+### Proxy (formerly Middleware)
+
+- `middleware.ts` is being renamed to `proxy.ts`
+- `middleware` export is being renamed to `proxy`
+- Old names still work but are deprecated
+
 ## Resources
 
-- [Next.js 15 Documentation](https://nextjs.org/docs)
+- [Next.js 16 Documentation](https://nextjs.org/docs)
 - [React 19 Documentation](https://react.dev)
 - [TailwindCSS 4 Documentation](https://tailwindcss.com/docs)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [AWS SDK v3 Documentation](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/)
 
 ## Questions?
 
 When in doubt:
 
-1. Check Next.js 15 documentation for App Router patterns
+1. Check Next.js 16 documentation for App Router patterns
 2. Use Server Components by default
-3. Keep components small and focused
-4. Follow TypeScript strict mode
-5. Prioritize user experience and accessibility
+3. Always await params and searchParams
+4. Never call services from Client Components - use API routes
+5. Keep secrets server-side only (no NEXT*PUBLIC* prefix)
+6. Follow TypeScript strict mode
+7. Prioritize user experience and accessibility
+
+## Related Documentation
+
+- **DynamoDB Patterns**: See `.kiro/steering/dynamodb-backend-patterns.md`
+- **Migration Guide**: See `frontend/docs/STORAGE_MIGRATION_GUIDE.md` (if exists)
