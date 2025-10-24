@@ -214,3 +214,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Bedrock AgentCore
+.bedrock_agentcore.yaml

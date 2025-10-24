@@ -249,35 +249,74 @@ Follow the [Zen of Python](https://peps.python.org/pep-0020/) principles for all
 
 ### MCP Integration Pattern
 
-When integrating with MCP servers:
+**CRITICAL**: All agent operations MUST be performed within the MCP client's context manager. This is a requirement of Strands Agents framework.
 
-1. **Connection Setup**:
+#### Correct Pattern (REQUIRED)
 
-   ```python
-   agent.tool.mcp_client(
-       action="connect",
-       connection_id="service_name",
-       transport="streamable_http",  # or "stdio" for local
-       server_url="https://api.example.com/mcp/",
-       headers={"Authorization": f"Bearer {token}"},
-       timeout=60
-   )
-   ```
+```python
+from mcp.client.streamable_http import streamablehttp_client
+from strands import Agent
+from strands.tools.mcp import MCPClient
 
-2. **Load Tools**:
+# Create MCP client
+github_mcp_client = MCPClient(
+    lambda: streamablehttp_client(
+        url="https://api.githubcopilot.com/mcp/",
+        headers={"Authorization": f"Bearer {github_token}"},
+        timeout=60,
+    )
+)
 
-   ```python
-   agent.tool.mcp_client(action="load_tools", connection_id="service_name")
-   ```
+# ALL agent operations must be within the context manager
+with github_mcp_client:
+    # Get tools from MCP server
+    tools = github_mcp_client.list_tools_sync()
+    
+    # Create agent with MCP tools
+    agent = Agent(model="us.amazon.nova-lite-v1:0", tools=tools)
+    
+    # Invoke agent (MUST be inside the context manager)
+    result = agent(prompt)
+    
+    # Process result (MUST be inside the context manager)
+    analysis = process_result(result)
+```
 
-3. **Use in Prompts**: Let the agent discover and use tools naturally
+#### Incorrect Pattern (WILL FAIL)
 
-   ```python
-   prompt = f"""Use the available MCP tools to analyze {repo_url}.
+```python
+# ❌ WRONG - Agent operations outside context manager
+with github_mcp_client:
+    tools = github_mcp_client.list_tools_sync()
+    agent = Agent(model="us.amazon.nova-lite-v1:0", tools=tools)
 
-   Available tools include get_file_contents, search_repositories, etc.
-   """
-   ```
+# This will fail with MCPClientInitializationError
+result = agent(prompt)  # MCP session is closed!
+```
+
+#### Why This Matters
+
+- The MCP session is automatically closed when exiting the context manager
+- Agent operations require an active MCP connection to use tools
+- Without the context manager, tools cannot be invoked
+- This is the #1 cause of "agent not using tools" issues
+
+#### Debugging MCP Tool Usage
+
+If your agent is not using MCP tools or hallucinating instead:
+
+1. **Check Context Manager**: Ensure all agent operations are within `with mcp_client:`
+2. **Verify Tool Loading**: Confirm `list_tools_sync()` returns tools
+3. **Check Logs**: Look for actual HTTP requests to the MCP server
+4. **Test Tool Calls**: Verify tools are being invoked (check for "Tool #1", "Tool #2" in logs)
+
+#### Common MCP Integration Mistakes
+
+1. **Creating agent outside context manager** - Agent won't have access to tools
+2. **Invoking agent outside context manager** - MCP session will be closed
+3. **Using old `agent.tool.mcp_client()` pattern** - Deprecated, use `MCPClient` instead
+4. **Not calling `list_tools_sync()`** - Agent won't know what tools are available
+5. **Weak prompts** - Even with tools available, LLM may not use them without explicit instructions
 
 ### Secrets Management
 
@@ -581,12 +620,79 @@ Use ASCII art or Mermaid for diagrams:
 
 - **Solution**: Check LLM prompt clarity, use fallback response pattern
 
+**Issue**: "Agent not using MCP tools / Hallucinating data"
+
+- **Root Cause**: Agent operations not within MCP context manager
+- **Solution**: Wrap ALL agent operations in `with mcp_client:` block
+- **Symptoms**: 
+  - Agent generates plausible but fake data
+  - No actual HTTP requests to MCP server in logs
+  - Tech stack items have no real evidence
+  - Contradictory results (e.g., Python + React)
+- **Fix**: See "MCP Integration Pattern" section above
+
+**Issue**: "Too many requests to model"
+
+- **Root Cause**: Bedrock rate limiting
+- **Solution**: Wait 1-2 minutes between requests, or implement exponential backoff
+- **Prevention**: Use caching for frequently analyzed repositories
+
 ### Debugging
 
 1. **Local Testing**: Run agent locally with `python main.py`
 2. **Verbose Logging**: Set `logging.DEBUG` for detailed logs
 3. **CloudWatch Logs**: Check logs in AWS Console after deployment
 4. **Request Tracing**: Use request_id to trace execution flow
+5. **MCP Tool Verification**: Check logs for "Tool #1", "Tool #2" to confirm tools are being called
+6. **HTTP Request Monitoring**: Look for actual HTTP requests to MCP server URLs
+
+### Critical Debugging Lessons Learned (October 2025)
+
+**Issue**: Project Intelligence Agent was generating inaccurate tech stack analysis
+
+**Symptoms**:
+- JavaScript projects identified as Python
+- Frameworks incompatible with primary language (e.g., FastAPI in JavaScript projects)
+- No evidence provided for tech stack items
+- Made-up metadata (fake star counts, fork counts)
+
+**Root Cause**: Agent operations were not within MCP context manager, causing LLM to hallucinate instead of using GitHub MCP tools
+
+**Solution**: Refactored to use proper MCP pattern with context managers
+
+**Before (WRONG)**:
+```python
+# Old pattern - doesn't work properly
+agent = Agent(model="us.amazon.nova-micro-v1:0", tools=[mcp_client])
+agent.tool.mcp_client(action="connect", ...)
+agent.tool.mcp_client(action="load_tools", ...)
+result = agent(prompt)  # Agent may not use tools!
+```
+
+**After (CORRECT)**:
+```python
+# New pattern - works reliably
+github_mcp_client = MCPClient(
+    lambda: streamablehttp_client(
+        url="https://api.githubcopilot.com/mcp/",
+        headers={"Authorization": f"Bearer {github_token}"},
+    )
+)
+
+with github_mcp_client:
+    tools = github_mcp_client.list_tools_sync()
+    agent = Agent(model="us.amazon.nova-lite-v1:0", tools=tools)
+    result = agent(prompt)  # Now agent actually uses tools!
+```
+
+**Results**:
+- ✅ Agent now actually calls GitHub MCP tools (verified in logs)
+- ✅ Accurate language detection (JavaScript, TypeScript, Rust, Python)
+- ✅ Evidence-based tech stack analysis
+- ✅ No more hallucination or fake data
+- ✅ 100% test success rate
+
+**Key Takeaway**: Always use MCP context managers. Without them, the LLM will hallucinate plausible-sounding but completely fabricated analysis.
 
 ## Future Enhancements
 

@@ -20,8 +20,9 @@ from bedrock_agentcore.runtime import BedrockAgentCoreApp
 from boto3 import session
 from botocore.exceptions import ClientError
 from dotenv import find_dotenv, load_dotenv
+from mcp.client.streamable_http import streamablehttp_client
 from strands import Agent
-from strands_tools import mcp_client
+from strands.tools.mcp import MCPClient
 
 # Configure logging for CloudWatch
 logging.basicConfig(
@@ -310,55 +311,6 @@ def _create_fallback_response(
     }
 
 
-def _setup_github_mcp_connection(agent: Agent, request_id: str) -> None:
-    """
-    Setup connection to the remote GitHub MCP server.
-
-    Uses the official GitHub Copilot MCP server via StreamableHTTP.
-    No Docker required - connects directly to the hosted service.
-
-    Args:
-        agent: Strands agent instance
-        request_id: Request ID for logging
-
-    Raises:
-        Exception: If connection setup fails
-    """
-    # Retrieve GitHub token from Secrets Manager or environment
-    try:
-        github_token: str = _get_github_token()
-    except Exception as e:
-        logger.warning(
-            f"Failed to retrieve GitHub token: {str(e)} - API rate limits will be restricted",
-            extra={"request_id": request_id},
-        )
-        github_token = ""
-
-    # Connect to the remote GitHub MCP server via StreamableHTTP
-    # This is the official hosted GitHub MCP server
-    agent.tool.mcp_client(
-        action="connect",
-        connection_id="github",
-        transport="streamable_http",
-        server_url="https://api.githubcopilot.com/mcp/",
-        headers={"Authorization": f"Bearer {github_token}"},
-        timeout=60,
-    )
-
-    logger.info(
-        "Connected to GitHub MCP server",
-        extra={"request_id": request_id, "transport": "streamable_http"},
-    )
-
-    # Load GitHub MCP tools into agent's registry for direct access
-    agent.tool.mcp_client(action="load_tools", connection_id="github")
-
-    logger.info(
-        "Loaded GitHub MCP tools",
-        extra={"request_id": request_id},
-    )
-
-
 @app.entrypoint
 def analyze_project(payload: dict) -> dict:
     """
@@ -417,53 +369,68 @@ def analyze_project(payload: dict) -> dict:
             )
             return {"request_id": request_id, "error": str(e), "status": "failed"}
 
-        # Create agent with mcp_client tool
-        agent = Agent(model="us.amazon.nova-micro-v1:0", tools=[mcp_client])
-
-        # Setup connection to GitHub MCP server
+        # Get GitHub token for MCP connection
         try:
-            _setup_github_mcp_connection(agent, request_id)
-        except Exception as mcp_error:
-            error_msg = f"Failed to connect to GitHub MCP server: {str(mcp_error)}"
-            logger.error(
-                error_msg,
-                extra={
-                    "request_id": request_id,
-                    "error": str(mcp_error),
-                    "error_type": type(mcp_error).__name__,
-                },
-                exc_info=True,
-            )
+            github_token = _get_github_token()
+        except Exception as token_error:
+            error_msg = f"Failed to get GitHub token: {str(token_error)}"
+            logger.error(error_msg, extra={"request_id": request_id})
             return {
                 "request_id": request_id,
                 "error": error_msg,
                 "status": "failed",
             }
 
-        # Create analysis prompt
-        prompt = _create_analysis_prompt(owner, repo, repo_url)
-
-        logger.info(
-            "Invoking agent with GitHub MCP tools",
-            extra={"request_id": request_id, "repository": f"{owner}/{repo}"},
+        # Create MCP client for GitHub
+        github_mcp_client = MCPClient(
+            lambda: streamablehttp_client(
+                url="https://api.githubcopilot.com/mcp/",
+                headers={"Authorization": f"Bearer {github_token}"},
+                timeout=60,
+            )
         )
 
-        # Invoke agent
+        # Use MCP client within context manager (REQUIRED by Strands)
         try:
-            result = agent(prompt)
+            with github_mcp_client:
+                # Get tools from MCP server
+                logger.info(
+                    "Connecting to GitHub MCP server",
+                    extra={"request_id": request_id},
+                )
+                tools = github_mcp_client.list_tools_sync()
+                logger.info(
+                    f"Loaded {len(tools)} tools from GitHub MCP server",
+                    extra={"request_id": request_id},
+                )
 
-            logger.info(
-                "Agent invocation completed",
-                extra={"request_id": request_id, "repository": f"{owner}/{repo}"},
-            )
-        except Exception as agent_error:
-            error_msg = f"Agent invocation failed: {str(agent_error)}"
+                # Create agent with MCP tools
+                agent = Agent(model="us.amazon.nova-micro-v1:0", tools=tools)
+
+                # Create analysis prompt
+                prompt = _create_analysis_prompt(owner, repo, repo_url)
+
+                logger.info(
+                    "Invoking agent with GitHub MCP tools",
+                    extra={"request_id": request_id, "repository": f"{owner}/{repo}"},
+                )
+
+                # Invoke agent (must be within the context manager)
+                result = agent(prompt)
+
+                logger.info(
+                    "Agent invocation completed",
+                    extra={"request_id": request_id, "repository": f"{owner}/{repo}"},
+                )
+
+        except Exception as mcp_error:
+            error_msg = f"MCP operation failed: {str(mcp_error)}"
             logger.error(
                 error_msg,
                 extra={
                     "request_id": request_id,
-                    "error": str(agent_error),
-                    "error_type": type(agent_error).__name__,
+                    "error": str(mcp_error),
+                    "error_type": type(mcp_error).__name__,
                 },
                 exc_info=True,
             )
