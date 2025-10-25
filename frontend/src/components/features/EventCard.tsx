@@ -19,6 +19,22 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
     });
   };
 
+  const getEventStatus = () => {
+    const now = new Date();
+    const startDate = new Date(event.startDate);
+    const endDate = new Date(event.endDate);
+
+    if (now < startDate) {
+      return { label: 'Upcoming', color: 'bg-blue-500' };
+    } else if (now >= startDate && now <= endDate) {
+      return { label: 'Ongoing', color: 'bg-green-500' };
+    } else {
+      return { label: 'Past', color: 'bg-gray-500' };
+    }
+  };
+
+  const status = getEventStatus();
+
   const totalPrizeAmount = event.prizes.reduce((total, prize) => {
     const amount = parseFloat(prize.amount.replace(/[^0-9.-]+/g, ''));
     return total + (isNaN(amount) ? 0 : amount);
@@ -39,6 +55,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
       }}
     >
       <div className="relative h-40 sm:h-48 w-full bg-gradient-to-br from-blue-500 to-purple-600">
+        <div className="absolute top-3 right-3">
+          <span className={`${status.color} text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md`}>
+            {status.label}
+          </span>
+        </div>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white p-4">
             <h3 className="text-xl sm:text-2xl font-bold mb-2 line-clamp-2">{event.name}</h3>
