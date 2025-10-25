@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 
 export interface PrizeBadgeProps {
   prizeCount: number;
@@ -17,15 +18,20 @@ export const PrizeBadge: React.FC<PrizeBadgeProps> = ({
   prizeCount,
   className = "",
 }) => {
+  const t = useTranslations("events");
+
   if (prizeCount === 0) {
     return null;
   }
+
+  const prizeLabel = prizeCount === 1 ? t("prize") : t("prizes");
+  const ariaLabel = t("wonPrize", { count: prizeCount });
 
   return (
     <div
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-linear-to-r from-yellow-400 to-amber-500 text-white shadow-md ${className}`}
       role="status"
-      aria-label={`Won ${prizeCount} ${prizeCount === 1 ? "prize" : "prizes"}`}
+      aria-label={ariaLabel}
     >
       {/* Trophy Icon */}
       <svg
@@ -39,7 +45,7 @@ export const PrizeBadge: React.FC<PrizeBadgeProps> = ({
 
       {/* Prize Count */}
       <span className="text-xs font-bold">
-        {prizeCount} {prizeCount === 1 ? "Prize" : "Prizes"}
+        {prizeCount} {prizeLabel}
       </span>
     </div>
   );

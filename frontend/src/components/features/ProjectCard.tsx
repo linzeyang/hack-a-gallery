@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardBody } from "@/components/ui/Card";
 import type { Project } from "@/lib/types/project";
 import type { Prize } from "@/lib/types/event";
@@ -22,6 +23,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   prioritizePrizes = false,
   prizes = [],
 }) => {
+  const t = useTranslations("projects");
+
   // Calculate prize information
   const prizeCount = project.prizeAwards?.length || 0;
   const hasPrizes = prizeCount > 0;
@@ -43,9 +46,9 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       className={cardClassName}
       onClick={onClick}
       role="article"
-      aria-label={`Project: ${project.name}${
+      aria-label={`${t("title")}: ${project.name}${
         hasPrizes
-          ? ` - Won ${prizeCount} ${prizeCount === 1 ? "prize" : "prizes"}`
+          ? ` - ${t("wonPrizes", { count: prizeCount })}`
           : ""
       }`}
     >
@@ -83,7 +86,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
               ))}
               {project.technologies.length > 5 && (
                 <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                  +{project.technologies.length - 5} more
+                  +{project.technologies.length - 5} {t("more")}
                 </span>
               )}
             </div>
@@ -93,7 +96,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         {/* Team Members */}
         {project.teamMembers.length > 0 && (
           <div className="border-t border-gray-200 pt-3">
-            <p className="text-xs text-gray-500 mb-2">Team</p>
+            <p className="text-xs text-gray-500 mb-2">{t("team")}</p>
             <div className="flex flex-wrap gap-2">
               {project.teamMembers.slice(0, 3).map((member, index) => (
                 <div

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import type { Project, TeamMember } from "@/lib/types/project";
@@ -21,6 +22,8 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
   onCancel,
   isSubmitting = false,
 }) => {
+  const t = useTranslations("forms.project");
+
   const [formData, setFormData] = useState({
     name: initialData?.name || "",
     description: initialData?.description || "",
@@ -143,53 +146,53 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Project Name */}
       <Input
-        label="Project Name *"
+        label={`${t("titleLabel")} *`}
         inputType="text"
         value={formData.name}
         onChange={(e) => handleInputChange("name", e.target.value)}
         error={errors.name}
-        placeholder="Enter your project name"
+        placeholder={t("titlePlaceholder")}
         disabled={isSubmitting}
       />
 
       {/* Project Description */}
       <Input
-        label="Description *"
+        label={`${t("descriptionLabel")} *`}
         inputType="textarea"
         value={formData.description}
         onChange={(e) => handleInputChange("description", e.target.value)}
         error={errors.description}
-        placeholder="Describe your project, what it does, and what problem it solves"
+        placeholder={t("descriptionPlaceholder")}
         rows={5}
         disabled={isSubmitting}
       />
 
       {/* GitHub URL */}
       <Input
-        label="GitHub URL (Optional)"
+        label={`${t("repoUrlLabel")} (GitHub)`}
         inputType="url"
         value={formData.githubUrl}
         onChange={(e) => handleInputChange("githubUrl", e.target.value)}
         error={errors.githubUrl}
-        placeholder="https://github.com/username/repository"
+        placeholder={t("repoUrlPlaceholder")}
         disabled={isSubmitting}
       />
 
       {/* Demo URL */}
       <Input
-        label="Demo URL (Optional)"
+        label={t("demoUrlLabel")}
         inputType="url"
         value={formData.demoUrl}
         onChange={(e) => handleInputChange("demoUrl", e.target.value)}
         error={errors.demoUrl}
-        placeholder="https://your-demo-site.com"
+        placeholder={t("demoUrlPlaceholder")}
         disabled={isSubmitting}
       />
 
       {/* Technologies */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Technologies *
+          {t("techStackLabel")} *
         </label>
         <div className="flex gap-2 mb-2">
           <input
@@ -197,7 +200,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
             value={techInput}
             onChange={(e) => setTechInput(e.target.value)}
             onKeyDown={handleTechKeyDown}
-            placeholder="Add a technology (press Enter)"
+            placeholder={t("techStackPlaceholder")}
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={isSubmitting}
           />
@@ -207,7 +210,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
             variant="outline"
             disabled={isSubmitting || !techInput.trim()}
           >
-            Add
+            {t("addTech")}
           </Button>
         </div>
         {errors.technologies && (
@@ -247,7 +250,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
       {/* Team Members */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">
-          Team Members *
+          {t("teamLabel")} *
         </label>
         {errors.teamMembers && (
           <p className="text-sm text-red-600 mb-2">{errors.teamMembers}</p>
@@ -260,7 +263,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
             >
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-gray-700">
-                  Team Member {index + 1}
+                  {t("teamMember")} {index + 1}
                 </span>
                 {formData.teamMembers.length > 1 && (
                   <button
@@ -269,37 +272,37 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                     className="text-red-600 hover:text-red-800 text-sm"
                     disabled={isSubmitting}
                   >
-                    Remove
+                    {t("removeTeamMember")}
                   </button>
                 )}
               </div>
 
               <Input
-                label="Name *"
+                label={`${t("memberNameLabel")} *`}
                 inputType="text"
                 value={member.name}
                 onChange={(e) =>
                   handleTeamMemberChange(index, "name", e.target.value)
                 }
                 error={errors[`team_${index}_name`]}
-                placeholder="Team member name"
+                placeholder={t("memberNamePlaceholder")}
                 disabled={isSubmitting}
               />
 
               <Input
-                label="Role *"
+                label={`${t("memberRoleLabel")} *`}
                 inputType="text"
                 value={member.role}
                 onChange={(e) =>
                   handleTeamMemberChange(index, "role", e.target.value)
                 }
                 error={errors[`team_${index}_role`]}
-                placeholder="e.g., Full Stack Developer, Designer"
+                placeholder={t("memberRolePlaceholder")}
                 disabled={isSubmitting}
               />
 
               <Input
-                label="GitHub Username (Optional)"
+                label={`${t("memberGithubLabel")} (GitHub)`}
                 inputType="text"
                 value={member.githubUsername || ""}
                 onChange={(e) =>
@@ -309,7 +312,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
                     e.target.value
                   )
                 }
-                placeholder="github-username"
+                placeholder={t("memberGithubPlaceholder")}
                 disabled={isSubmitting}
               />
             </div>
@@ -323,14 +326,14 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
           className="mt-3"
           disabled={isSubmitting}
         >
-          + Add Team Member
+          + {t("addTeamMember")}
         </Button>
       </div>
 
       {/* Form Actions */}
       <div className="flex gap-3 pt-4">
         <Button type="submit" loading={isSubmitting} disabled={isSubmitting}>
-          {initialData?.id ? "Update Project" : "Submit Project"}
+          {initialData?.id ? t("updateButton") : t("submitButton")}
         </Button>
         <Button
           type="button"
@@ -338,7 +341,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
           onClick={onCancel}
           disabled={isSubmitting}
         >
-          Cancel
+          {t("cancelButton")}
         </Button>
       </div>
     </form>

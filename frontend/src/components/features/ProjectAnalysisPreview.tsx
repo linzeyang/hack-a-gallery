@@ -8,6 +8,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import {
@@ -116,6 +117,8 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
   onReAnalyze,
   className = "",
 }) => {
+  const t = useTranslations("projects");
+
   const { summary, technologies, tags, key_features, metadata } = analysis;
 
   // Extract owner/repo from GitHub URL
@@ -147,7 +150,7 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
               </svg>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  Project Analysis Results
+                  {t("analysisResults")}
                 </h2>
                 {repoId && (
                   <a
@@ -177,10 +180,10 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
 
             {/* Metadata */}
             <div className="flex items-center gap-4 text-sm text-gray-500">
-              <span>Agent: {metadata.agent_name}</span>
+              <span>{t("agent")}: {metadata.agent_name}</span>
               <span>•</span>
               <span>
-                Processing time:{" "}
+                {t("processingTime")}:{" "}
                 {formatProcessingTime(metadata.processing_time_ms)}
               </span>
             </div>
@@ -200,7 +203,7 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
                   clipRule="evenodd"
                 />
               </svg>
-              Analysis Complete
+              {t("analysisComplete")}
             </span>
           </div>
         </div>
@@ -210,14 +213,14 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
         {/* Project Summary */}
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-3">
-            Project Summary
+            {t("projectSummary")}
           </h3>
           {summary ? (
             <p className="text-gray-700 leading-relaxed">{summary}</p>
           ) : (
             <EmptySection
-              title="No Summary Available"
-              description="The AI agent couldn't generate a summary for this repository."
+              title={t("noSummary")}
+              description={t("noSummaryDescription")}
               icon={
                 <svg
                   className="w-8 h-8 text-gray-400"
@@ -240,7 +243,7 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
         {/* Technologies */}
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-3">
-            Technologies Detected
+            {t("technologiesDetected")}
           </h3>
           {technologies && technologies.length > 0 ? (
             <div className="flex flex-wrap gap-2">
@@ -255,8 +258,8 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
             </div>
           ) : (
             <EmptySection
-              title="No Technologies Detected"
-              description="The AI agent couldn't identify specific technologies in this repository."
+              title={t("noTechnologies")}
+              description={t("noTechnologiesDescription")}
               icon={
                 <svg
                   className="w-8 h-8 text-gray-400"
@@ -279,7 +282,7 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
         {/* Tags */}
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-3">
-            Project Tags
+            {t("projectTags")}
           </h3>
           {tags && tags.length > 0 ? (
             <div className="flex flex-wrap gap-2">
@@ -294,8 +297,8 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
             </div>
           ) : (
             <EmptySection
-              title="No Tags Generated"
-              description="The AI agent couldn't generate categorization tags for this repository."
+              title={t("noTags")}
+              description={t("noTagsDescription")}
               icon={
                 <svg
                   className="w-8 h-8 text-gray-400"
@@ -318,7 +321,7 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
         {/* Key Features */}
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-3">
-            Key Features
+            {t("keyFeatures")}
           </h3>
           {key_features && key_features.length > 0 ? (
             <ul className="space-y-2">
@@ -328,8 +331,8 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
             </ul>
           ) : (
             <EmptySection
-              title="No Key Features Identified"
-              description="The AI agent couldn't extract specific features from this repository."
+              title={t("noFeatures")}
+              description={t("noFeaturesDescription")}
               icon={
                 <svg
                   className="w-8 h-8 text-gray-400"
@@ -370,7 +373,7 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
                   clipRule="evenodd"
                 />
               </svg>
-              Confirm & Use
+              {t("confirmAndUse")}
             </Button>
           )}
 
@@ -395,14 +398,14 @@ export const ProjectAnalysisPreview: React.FC<AnalysisPreviewProps> = ({
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                 />
               </svg>
-              Re-analyze
+              {t("reAnalyze")}
             </Button>
           )}
         </div>
 
         {/* Analysis Timestamp */}
         <div className="text-xs text-gray-400 text-center pt-2 border-t border-gray-100">
-          Analysis completed on {new Date(metadata.timestamp).toLocaleString()}
+          {t("analysisCompletedOn", { date: new Date(metadata.timestamp).toLocaleString() })}
         </div>
       </CardBody>
     </Card>

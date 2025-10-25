@@ -1,34 +1,40 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
 export default function Features() {
+  const t = useTranslations('features');
+  
   const features = [
     {
       icon: '🤖',
-      title: 'AI-Powered Insights',
-      description: 'Intelligent analysis and recommendations help your projects stand out and get discovered by the right audience.',
+      titleKey: 'aiAnalysis.title',
+      descriptionKey: 'aiAnalysis.description',
     },
     {
       icon: '✨',
-      title: 'Showcase Excellence',
-      description: 'Beautiful project galleries that highlight your innovation, technical skills, and creative problem-solving.',
+      titleKey: 'showcase.title',
+      descriptionKey: 'showcase.description',
     },
     {
       icon: '🏆',
-      title: 'Preserve Your Legacy',
-      description: 'Never lose track of your hackathon achievements. Build a permanent portfolio of your innovation journey.',
+      titleKey: 'portfolio.title',
+      descriptionKey: 'portfolio.description',
     },
     {
       icon: '🌐',
-      title: 'Connect & Collaborate',
-      description: 'Discover amazing projects, connect with talented hackers, and find inspiration for your next big idea.',
+      titleKey: 'community.title',
+      descriptionKey: 'community.description',
     },
     {
       icon: '📊',
-      title: 'Track Your Impact',
-      description: 'See how your projects perform across events and gain insights into what resonates with the community.',
+      titleKey: 'analytics.title',
+      descriptionKey: 'analytics.description',
     },
     {
       icon: '🚀',
-      title: 'Easy Submission',
-      description: 'Submit your projects in minutes with our streamlined interface. Focus on building, not paperwork.',
+      titleKey: 'discovery.title',
+      descriptionKey: 'discovery.description',
     },
   ];
 
@@ -38,11 +44,10 @@ export default function Features() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Everything you need to shine
+            {t('title')}
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            HackaGallery provides the tools and platform to showcase your hackathon projects 
-            and connect with the innovation community.
+            {t('description')}
           </p>
         </div>
 
@@ -58,12 +63,12 @@ export default function Features() {
               
               {/* Title */}
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                {feature.title}
+                {t(feature.titleKey)}
               </h3>
               
               {/* Description */}
               <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-                {feature.description}
+                {t(feature.descriptionKey)}
               </p>
             </article>
           ))}

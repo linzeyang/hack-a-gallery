@@ -8,6 +8,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { ProjectForm } from "./ProjectForm";
 import { ProjectAnalysisForm } from "./ProjectAnalysisForm";
 import { ProjectAnalysisPreview } from "./ProjectAnalysisPreview";
@@ -28,6 +29,8 @@ type FormStep = "analysis" | "form" | "preview";
 export const ProjectFormWithAnalysis: React.FC<
   ProjectFormWithAnalysisProps
 > = ({ eventId, initialData, onSubmit, onCancel, isSubmitting = false }) => {
+  const t = useTranslations("forms.project");
+
   // Form state
   const [currentStep, setCurrentStep] = useState<FormStep>("analysis");
   const [analysisData, setAnalysisData] = useState<ProjectAnalysis | null>(
@@ -137,8 +140,8 @@ export const ProjectFormWithAnalysis: React.FC<
    */
   const renderStepIndicator = () => {
     const steps = [
-      { key: "analysis", label: "AI Analysis", icon: "🤖" },
-      { key: "form", label: "Project Details", icon: "📝" },
+      { key: "analysis", label: t("aiAnalysisStep"), icon: "🤖" },
+      { key: "form", label: t("projectDetailsStep"), icon: "📝" },
     ];
 
     return (
@@ -194,12 +197,10 @@ export const ProjectFormWithAnalysis: React.FC<
     <div className="space-y-6">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          AI-Powered Project Analysis
+          {t("aiAnalysisTitle")}
         </h2>
         <p className="text-gray-600 max-w-2xl mx-auto">
-          Get started by analyzing your GitHub repository. Our AI will extract
-          technologies, features, and generate a summary to help you create a
-          better project submission.
+          {t("aiAnalysisDescription")}
         </p>
       </div>
 
@@ -217,7 +218,7 @@ export const ProjectFormWithAnalysis: React.FC<
           onClick={handleSkipAnalysis}
           className="text-base text-gray-600 hover:text-gray-800 underline font-medium"
         >
-          Skip analysis and fill form manually
+          {t("skipAnalysis")}
         </button>
       </div>
     </div>
@@ -230,10 +231,10 @@ export const ProjectFormWithAnalysis: React.FC<
     <div className="space-y-6">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Analysis Results
+          {t("analysisResultsTitle")}
         </h2>
         <p className="text-gray-600">
-          Review the AI analysis results and choose how to proceed.
+          {t("analysisResultsDescription")}
         </p>
       </div>
 
@@ -251,7 +252,7 @@ export const ProjectFormWithAnalysis: React.FC<
       {/* Navigation */}
       <div className="flex justify-center gap-4">
         <Button variant="outline" onClick={handleReAnalyze}>
-          Try Different Repository
+          {t("tryDifferentRepo")}
         </Button>
       </div>
     </div>
@@ -265,12 +266,12 @@ export const ProjectFormWithAnalysis: React.FC<
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Project Details
+            {t("projectDetailsTitle")}
           </h2>
           <p className="text-gray-600">
             {analysisData
-              ? "Review and complete your project information. Some fields have been pre-filled from the AI analysis."
-              : "Fill in your project information manually."}
+              ? t("projectDetailsWithAnalysis")
+              : t("projectDetailsManual")}
           </p>
         </div>
 
@@ -294,7 +295,7 @@ export const ProjectFormWithAnalysis: React.FC<
                 d="M15 19l-7-7 7-7"
               />
             </svg>
-            Back to Analysis
+            {t("backToAnalysis")}
           </Button>
         )}
       </div>
@@ -303,16 +304,16 @@ export const ProjectFormWithAnalysis: React.FC<
       {analysisData && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <h3 className="text-sm font-semibold text-blue-900 mb-2">
-            AI Analysis Applied
+            {t("aiAnalysisApplied")}
           </h3>
           <div className="text-sm text-blue-800 space-y-1">
-            <p>• Pre-filled description from repository analysis</p>
+            <p>• {t("prefilledDescription")}</p>
             <p>
-              • Added {analysisData.technologies.length} detected technologies
+              • {t("addedTechnologies", { count: analysisData.technologies.length })}
             </p>
             {analysisData.key_features.length > 0 && (
               <p>
-                • Identified {analysisData.key_features.length} key features
+                • {t("identifiedFeatures", { count: analysisData.key_features.length })}
               </p>
             )}
           </div>

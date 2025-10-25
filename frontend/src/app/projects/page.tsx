@@ -12,6 +12,17 @@ import { prizeAwardService } from "@/services/prizeAwardService";
 import { ProjectsClient } from "./ProjectsClient";
 import Link from "next/link";
 import type { Project } from "@/lib/types/project";
+import { getTranslations } from 'next-intl/server';
+import type { Metadata } from 'next';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('metadata.projects');
+  
+  return {
+    title: t('title'),
+    description: t('description'),
+  };
+}
 
 export default async function ProjectsPage() {
   // Fetch both projects and events data for search functionality

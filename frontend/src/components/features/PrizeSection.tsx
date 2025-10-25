@@ -1,7 +1,10 @@
+"use client";
+
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { PrizeCard } from "./PrizeCard";
 import type { PrizeAward } from "@/lib/types/prize";
 import type { Event, Prize } from "@/lib/types/event";
+import { useTranslations } from "next-intl";
 
 interface PrizeSectionProps {
   prizeAwards: PrizeAward[];
@@ -16,13 +19,14 @@ interface PrizeSectionProps {
  * Includes an empty state when no prizes have been won.
  */
 export function PrizeSection({ prizeAwards, event }: PrizeSectionProps) {
+  const t = useTranslations("events");
   // If no prizes, show empty state
   if (prizeAwards.length === 0) {
     return (
       <Card className="mb-4 sm:mb-6">
         <CardHeader className="p-4 sm:p-6">
           <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
-            Awards & Recognition
+            {t("awardsAndRecognition")}
           </h2>
         </CardHeader>
         <CardBody className="p-4 sm:p-6">
@@ -43,9 +47,9 @@ export function PrizeSection({ prizeAwards, event }: PrizeSectionProps) {
                 />
               </svg>
             </div>
-            <p className="text-sm sm:text-base text-gray-500">No awards yet</p>
+            <p className="text-sm sm:text-base text-gray-500">{t("noAwardsYet")}</p>
             <p className="text-xs sm:text-sm text-gray-400 mt-1">
-              This project hasn&apos;t won any prizes
+              {t("noAwardsDescription")}
             </p>
           </div>
         </CardBody>
@@ -76,10 +80,10 @@ export function PrizeSection({ prizeAwards, event }: PrizeSectionProps) {
       <CardHeader className="p-4 sm:p-6">
         <div className="flex items-center gap-2">
           <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
-            Awards & Recognition
+            {t("awardsAndRecognition")}
           </h2>
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-            {prizeAwards.length} {prizeAwards.length === 1 ? "Prize" : "Prizes"}
+            {prizeAwards.length} {prizeAwards.length === 1 ? t("prize") : t("prizes")}
           </span>
         </div>
       </CardHeader>

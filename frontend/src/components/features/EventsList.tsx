@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { EventCard } from './EventCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/Button';
@@ -13,13 +14,14 @@ export interface EventsListProps {
 
 export const EventsList: React.FC<EventsListProps> = ({ events }) => {
   const router = useRouter();
+  const t = useTranslations('events');
 
   if (events.length === 0) {
     return (
       <EmptyState
-        title="No Events Yet"
-        description="Be the first to create a hackathon event and start accepting project submissions!"
-        actionLabel="Create Event"
+        title={t('noEvents')}
+        description={t('noEventsDescription')}
+        actionLabel={t('createEvent')}
         onAction={() => router.push('/events/create')}
       />
     );
@@ -28,8 +30,8 @@ export const EventsList: React.FC<EventsListProps> = ({ events }) => {
   return (
     <div>
       <div className="flex justify-end mb-4 sm:mb-6">
-        <Button onClick={() => router.push('/events/create')} aria-label="Create a new event">
-          Create Event
+        <Button onClick={() => router.push('/events/create')} aria-label={t('createEvent')}>
+          {t('createEvent')}
         </Button>
       </div>
 

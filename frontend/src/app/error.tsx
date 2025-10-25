@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 export default function Error({
   error,
@@ -9,6 +10,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations("errors");
+
   useEffect(() => {
     // Log the error to an error reporting service
     console.error("Global error boundary caught:", error);
@@ -19,10 +22,10 @@ export default function Error({
       <div className="max-w-md w-full text-center space-y-6">
         <div className="space-y-2">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Something went wrong!
+            {t("somethingWentWrong")}
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            We encountered an unexpected error. Please try again.
+            {t("loadingFailed")}
           </p>
         </div>
 
@@ -38,7 +41,7 @@ export default function Error({
           onClick={reset}
           className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          Try again
+          {t("tryAgain")}
         </button>
       </div>
     </div>

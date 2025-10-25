@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 
 export interface SearchBarProps {
   value: string;
@@ -13,11 +14,15 @@ export interface SearchBarProps {
 export const SearchBar: React.FC<SearchBarProps> = ({
   value,
   onChange,
-  placeholder = "Search projects...",
+  placeholder,
   className = "",
   debounceMs = 300,
 }) => {
+  const t = useTranslations("search");
   const [localValue, setLocalValue] = useState(value);
+  
+  // Use translation for placeholder if not provided
+  const effectivePlaceholder = placeholder || t("placeholder");
 
   // Debounced onChange handler
   const debouncedOnChange = useCallback(
@@ -80,9 +85,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         type="text"
         value={localValue}
         onChange={handleInputChange}
-        placeholder={placeholder}
+        placeholder={effectivePlaceholder}
         className={combinedClassName}
-        aria-label="Search projects"
+        aria-label={t("placeholder")}
         role="searchbox"
       />
 

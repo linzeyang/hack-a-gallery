@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export default function Header() {
+  const t = useTranslations('nav');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -12,7 +14,7 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo/Brand */}
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="text-2xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               HackaGallery
             </span>
           </Link>
@@ -23,13 +25,13 @@ export default function Header() {
               href="/events"
               className="text-gray-700 hover:text-blue-600 transition-colors duration-150 ease-in-out font-medium"
             >
-              Events
+              {t('events')}
             </Link>
             <Link
               href="/projects"
               className="text-gray-700 hover:text-blue-600 transition-colors duration-150 ease-in-out font-medium"
             >
-              Projects
+              {t('projects')}
             </Link>
           </div>
 
@@ -39,7 +41,7 @@ export default function Header() {
             className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 transition-all duration-150 ease-in-out min-h-[44px] min-w-[44px]"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-expanded={mobileMenuOpen}
-            aria-label="Toggle navigation menu"
+            aria-label={mobileMenuOpen ? t('closeMenu') : t('menu')}
           >
             <svg
               className="h-6 w-6"
@@ -74,14 +76,14 @@ export default function Header() {
                 className="text-gray-700 hover:text-blue-600 transition-colors duration-150 ease-in-out font-medium px-2 py-2 min-h-[44px] flex items-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Events
+                {t('events')}
               </Link>
               <Link
                 href="/projects"
                 className="text-gray-700 hover:text-blue-600 transition-colors duration-150 ease-in-out font-medium px-2 py-2 min-h-[44px] flex items-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Projects
+                {t('projects')}
               </Link>
             </div>
           </div>

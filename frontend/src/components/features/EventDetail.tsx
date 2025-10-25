@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
@@ -21,6 +22,7 @@ export const EventDetail: React.FC<EventDetailProps> = ({
   projects,
 }) => {
   const router = useRouter();
+  const t = useTranslations('events');
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -48,7 +50,7 @@ export const EventDetail: React.FC<EventDetailProps> = ({
         onClick={() => router.push("/events")}
         className="text-sm sm:text-base"
       >
-        ← Back to Events
+        ← {t('title')}
       </Button>
 
       {/* Event Header */}
@@ -72,7 +74,7 @@ export const EventDetail: React.FC<EventDetailProps> = ({
           <Card>
             <CardHeader className="p-4 sm:p-6">
               <h2 className="text-xl sm:text-2xl font-bold">
-                About This Event
+                {t('overview')}
               </h2>
             </CardHeader>
             <CardBody className="p-4 sm:p-6">
@@ -87,7 +89,7 @@ export const EventDetail: React.FC<EventDetailProps> = ({
           {event.requirements && (
             <Card>
               <CardHeader className="p-4 sm:p-6">
-                <h2 className="text-xl sm:text-2xl font-bold">Requirements</h2>
+                <h2 className="text-xl sm:text-2xl font-bold">{t('rules')}</h2>
               </CardHeader>
               <CardBody className="p-4 sm:p-6">
                 <div className="prose prose-sm sm:prose-base max-w-none text-gray-700">
@@ -103,7 +105,7 @@ export const EventDetail: React.FC<EventDetailProps> = ({
           {event.prizes.length > 0 && (
             <Card>
               <CardHeader className="p-4 sm:p-6">
-                <h2 className="text-xl sm:text-2xl font-bold">Prizes</h2>
+                <h2 className="text-xl sm:text-2xl font-bold">{t('prizes')}</h2>
               </CardHeader>
               <CardBody className="p-4 sm:p-6">
                 <div className="space-y-3 sm:space-y-4">
@@ -137,7 +139,7 @@ export const EventDetail: React.FC<EventDetailProps> = ({
         <div className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader className="p-4 sm:p-6">
-              <h2 className="text-lg sm:text-xl font-bold">Event Details</h2>
+              <h2 className="text-lg sm:text-xl font-bold">{t('details')}</h2>
             </CardHeader>
             <CardBody className="space-y-3 sm:space-y-4 p-4 sm:p-6">
               <div>
@@ -155,7 +157,7 @@ export const EventDetail: React.FC<EventDetailProps> = ({
                       d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
-                  <span className="font-medium">Start Date</span>
+                  <span className="font-medium">{t('startDate')}</span>
                 </div>
                 <p className="text-gray-900 ml-7">
                   {formatDate(event.startDate)}
@@ -177,7 +179,7 @@ export const EventDetail: React.FC<EventDetailProps> = ({
                       d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
-                  <span className="font-medium">End Date</span>
+                  <span className="font-medium">{t('endDate')}</span>
                 </div>
                 <p className="text-gray-900 ml-7">
                   {formatDate(event.endDate)}
@@ -205,7 +207,7 @@ export const EventDetail: React.FC<EventDetailProps> = ({
                       d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                     />
                   </svg>
-                  <span className="font-medium">Location</span>
+                  <span className="font-medium">{t('location')}</span>
                 </div>
                 <p className="text-gray-900 ml-7">{event.location}</p>
               </div>
@@ -225,7 +227,7 @@ export const EventDetail: React.FC<EventDetailProps> = ({
                       d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                     />
                   </svg>
-                  <span className="font-medium">Organizer</span>
+                  <span className="font-medium">{t('organizer')}</span>
                 </div>
                 <p className="text-gray-900 ml-7">{event.organizerName}</p>
               </div>
@@ -240,15 +242,15 @@ export const EventDetail: React.FC<EventDetailProps> = ({
             }
             disabled={isPast}
             aria-label={
-              isPast ? "Event has ended" : `Submit a project for ${event.name}`
+              isPast ? t('status.past') : t('submitProject')
             }
             title={
               isPast
-                ? "This event has ended and is no longer accepting submissions"
+                ? t('eventEndedNoSubmissions')
                 : undefined
             }
           >
-            {isPast ? "Event Ended" : "Submit Project"}
+            {isPast ? t('eventEnded') : t('submitProject')}
           </Button>
         </div>
       </div>
@@ -256,17 +258,17 @@ export const EventDetail: React.FC<EventDetailProps> = ({
       {/* Projects Section */}
       <div>
         <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">
-          Submitted Projects
+          {t('submittedProjects')}
         </h2>
         {projects.length === 0 ? (
           <EmptyState
-            title="No Projects Yet"
+            title={t('noProjectsYet')}
             description={
               isPast
-                ? "This event has ended and is no longer accepting submissions."
-                : "Be the first to submit a project for this hackathon!"
+                ? t('eventEndedNoSubmissions')
+                : t('beFirstToSubmit')
             }
-            actionLabel={isPast ? "Event Ended" : "Submit Project"}
+            actionLabel={isPast ? t('eventEnded') : t('submitProject')}
             onAction={
               isPast
                 ? undefined
@@ -291,7 +293,7 @@ export const EventDetail: React.FC<EventDetailProps> = ({
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                     <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
-                      Prize Winners
+                      {t('prizeWinners')}
                     </h3>
                   </div>
                   <div
@@ -326,7 +328,7 @@ export const EventDetail: React.FC<EventDetailProps> = ({
                 ) && (
                   <div className="flex items-center gap-3 mb-4">
                     <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
-                      Other Projects
+                      {t('otherProjects')}
                     </h3>
                     <div
                       className="h-px flex-1 bg-gray-200"

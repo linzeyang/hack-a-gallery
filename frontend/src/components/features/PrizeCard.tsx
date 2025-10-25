@@ -1,4 +1,7 @@
+"use client";
+
 import type { Prize } from "@/lib/types/event";
+import { useTranslations } from "next-intl";
 
 interface PrizeCardProps {
   prize: Prize;
@@ -13,9 +16,11 @@ interface PrizeCardProps {
  * Shows prize icon/badge, title, amount, description, and award date.
  */
 export function PrizeCard({ prize, awardedAt, eventName }: PrizeCardProps) {
+  const t = useTranslations("events");
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
+    return date.toLocaleDateString("zh-CN", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -61,8 +66,8 @@ export function PrizeCard({ prize, awardedAt, eventName }: PrizeCardProps) {
           )}
 
           <div className="flex flex-col gap-1 text-xs sm:text-sm text-gray-500">
-            <p>Awarded on {formatDate(awardedAt)}</p>
-            {eventName && <p className="text-gray-400">From {eventName}</p>}
+            <p>{t("awardedOn", { date: formatDate(awardedAt) })}</p>
+            {eventName && <p className="text-gray-400">{t("from")} {eventName}</p>}
           </div>
         </div>
       </div>

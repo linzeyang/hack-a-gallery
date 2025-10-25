@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { ProjectCard } from "./ProjectCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { Project } from "@/lib/types/project";
@@ -70,6 +71,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   onProjectClick,
   className = "",
 }) => {
+  const t = useTranslations("search");
+  
   const hasActiveFilters =
     activeFilters.technologies.length > 0 ||
     activeFilters.events.length > 0 ||
@@ -85,25 +88,21 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
 
     if (activeFilters.technologies.length > 0) {
       parts.push(
-        `${activeFilters.technologies.length} technology filter${
-          activeFilters.technologies.length > 1 ? "s" : ""
-        }`
+        `${activeFilters.technologies.length} ${t("filterByTech")}`
       );
     }
 
     if (activeFilters.events.length > 0) {
       parts.push(
-        `${activeFilters.events.length} event filter${
-          activeFilters.events.length > 1 ? "s" : ""
-        }`
+        `${activeFilters.events.length} ${t("filterByEvent")}`
       );
     }
 
     if (activeFilters.prizeStatus && activeFilters.prizeStatus !== "all") {
       const prizeLabel =
         activeFilters.prizeStatus === "winners"
-          ? "prize winners only"
-          : "no prizes";
+          ? t("winnersOnly")
+          : t("noPrizes");
       parts.push(prizeLabel);
     }
 
@@ -113,11 +112,11 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   const getSortLabel = () => {
     switch (activeFilters.sortBy) {
       case "date":
-        return "most recent first";
+        return t("sortByDate");
       case "title":
-        return "alphabetically";
+        return t("sortByTitle");
       case "popularity":
-        return "most popular first";
+        return t("sortByPopularity");
       default:
         return "";
     }
@@ -129,9 +128,9 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
       return (
         <div className={className}>
           <EmptyState
-            title="No Projects Yet"
-            description="Be the first to submit a project!"
-            actionLabel="Browse Events"
+            title={t("noProjectsYet")}
+            description={t("beFirstToSubmit")}
+            actionLabel={t("browseEvents")}
             onAction={() => {
               /* Navigate to events */
             }}
@@ -158,20 +157,20 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
             />
           </svg>
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No projects found
+            {t("noProjectsFound")}
           </h3>
           <p className="text-gray-600 mb-6">
             {searchTerm.trim()
-              ? `No projects match "${searchTerm.trim()}" with the current filters.`
-              : "No projects match the current filters."}
+              ? t("noMatchWithSearch", { term: searchTerm.trim() })
+              : t("noMatchWithFilters")}
           </p>
           <div className="space-y-2 text-sm text-gray-500">
-            <p>Try:</p>
+            <p>{t("tryThese")}:</p>
             <ul className="list-disc list-inside space-y-1">
-              <li>Removing some filters</li>
-              <li>Using different search terms</li>
-              <li>Checking for typos</li>
-              <li>Browsing all projects</li>
+              <li>{t("removeFilters")}</li>
+              <li>{t("differentTerms")}</li>
+              <li>{t("checkTypos")}</li>
+              <li>{t("browseAll")}</li>
             </ul>
           </div>
         </div>
@@ -187,20 +186,18 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
               {projects.length === totalCount
-                ? `${totalCount} project${totalCount !== 1 ? "s" : ""}`
-                : `${projects.length} of ${totalCount} project${
-                    totalCount !== 1 ? "s" : ""
-                  }`}
+                ? t("resultsCount", { count: totalCount })
+                : t("resultsCountOf", { shown: projects.length, total: totalCount })}
             </h2>
             {hasActiveFilters && (
               <p className="text-sm text-gray-600 mt-1">
-                Filtered by {getFilterSummary()}
+                {t("filteredBy")} {getFilterSummary()}
               </p>
             )}
           </div>
 
           {activeFilters.sortBy && (
-            <div className="text-sm text-gray-500">Sorted {getSortLabel()}</div>
+            <div className="text-sm text-gray-500">{t("sorted")} {getSortLabel()}</div>
           )}
         </div>
       </div>
@@ -224,7 +221,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
       {projects.length < totalCount && (
         <div className="text-center mt-8">
           <p className="text-sm text-gray-500">
-            Showing {projects.length} of {totalCount} projects
+            {t("showingCount", { shown: projects.length, total: totalCount })}
           </p>
         </div>
       )}

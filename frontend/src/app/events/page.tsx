@@ -10,6 +10,17 @@
 
 import { eventService } from "@/services/eventService";
 import { EventsList } from "@/components/features";
+import { getTranslations } from 'next-intl/server';
+import type { Metadata } from 'next';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('metadata.events');
+  
+  return {
+    title: t('title'),
+    description: t('description'),
+  };
+}
 
 export default async function EventsPage() {
   const { data: events, error } = await eventService.getAll();

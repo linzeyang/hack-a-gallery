@@ -8,6 +8,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import {
@@ -32,6 +33,8 @@ export const ProjectAnalysisForm: React.FC<AnalysisFormProps> = ({
   disabled = false,
   className = "",
 }) => {
+  const t = useTranslations("forms.project");
+
   // Form state
   const [formState, setFormState] = useState<AnalysisFormState>({
     data: {
@@ -234,23 +237,22 @@ export const ProjectAnalysisForm: React.FC<AnalysisFormProps> = ({
         {/* Header */}
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Analyze GitHub Repository
+            {t("analyzeRepoTitle")}
           </h2>
           <p className="text-gray-600">
-            Get AI-powered insights about your project&apos;s technologies,
-            features, and more.
+            {t("analyzeRepoDescription")}
           </p>
         </div>
 
         {/* Repository URL Input */}
         <div>
           <Input
-            label="GitHub Repository URL *"
+            label={`${t("repoUrlLabel")} (GitHub) *`}
             inputType="url"
             value={formState.data.repositoryUrl}
             onChange={(e) => handleInputChange(e.target.value)}
             error={formState.errors.repositoryUrl}
-            placeholder="https://github.com/owner/repository"
+            placeholder={t("repoUrlPlaceholder")}
             disabled={disabled || isLoading}
             className="text-lg"
           />
@@ -283,7 +285,7 @@ export const ProjectAnalysisForm: React.FC<AnalysisFormProps> = ({
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-start gap-3">
               <svg
-                className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5"
+                className="w-5 h-5 text-red-500 shrink-0 mt-0.5"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -295,7 +297,7 @@ export const ProjectAnalysisForm: React.FC<AnalysisFormProps> = ({
               </svg>
               <div className="flex-1">
                 <h3 className="text-sm font-medium text-red-800 mb-1">
-                  Analysis Failed
+                  {t("analysisFailed")}
                 </h3>
                 <p className="text-sm text-red-700">
                   {formState.errors.general}
@@ -306,7 +308,7 @@ export const ProjectAnalysisForm: React.FC<AnalysisFormProps> = ({
                     onClick={handleRetry}
                     className="mt-2 text-sm font-medium text-red-800 hover:text-red-900 underline"
                   >
-                    Try Again
+                    {t("tryAgain")}
                   </button>
                 )}
               </div>
@@ -318,7 +320,7 @@ export const ProjectAnalysisForm: React.FC<AnalysisFormProps> = ({
         {isLoading && (
           <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-center gap-4">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <svg
                   className="animate-spin h-6 w-6 text-blue-600"
                   fill="none"
@@ -341,20 +343,19 @@ export const ProjectAnalysisForm: React.FC<AnalysisFormProps> = ({
               </div>
               <div className="flex-1">
                 <h3 className="text-sm font-medium text-blue-900 mb-1">
-                  Analyzing Repository...
+                  {t("analyzingRepo")}
                 </h3>
                 <p className="text-sm text-blue-700">
-                  Our AI agent is analyzing the repository structure,
-                  technologies, and features.
+                  {t("analyzingRepoMessage")}
                   {estimatedTimeRemaining && estimatedTimeRemaining > 0 && (
                     <span className="ml-1">
-                      Estimated time remaining: {estimatedTimeRemaining}s
+                      {t("estimatedTime", { seconds: estimatedTimeRemaining })}
                     </span>
                   )}
                 </p>
                 {analysisState.retryCount > 0 && (
                   <p className="text-xs text-blue-600 mt-1">
-                    Retry attempt {analysisState.retryCount}
+                    {t("retryAttempt", { count: analysisState.retryCount })}
                   </p>
                 )}
               </div>
@@ -374,15 +375,14 @@ export const ProjectAnalysisForm: React.FC<AnalysisFormProps> = ({
             }
             className="min-w-[200px]"
           >
-            {isLoading ? "Analyzing..." : "Analyze Repository"}
+            {isLoading ? t("analyzing") : t("analyzeButton")}
           </Button>
         </div>
 
         {/* Help Text */}
         <div className="text-center text-sm text-gray-500">
           <p>
-            Analysis typically takes 15-30 seconds. We&apos;ll extract
-            technologies, features, and generate a summary of your project.
+            {t("analysisHelpText")}
           </p>
         </div>
       </form>

@@ -14,11 +14,33 @@ import { projectService } from "@/services/projectService";
 import { prizeAwardService } from "@/services/prizeAwardService";
 import { sortProjectsByPrizeStatus } from "@/lib/utils/prizes";
 import { EventDetail } from "@/components/features";
+import { getTranslations } from 'next-intl/server';
+import type { Metadata } from 'next';
 
 interface EventDetailPageProps {
   params: Promise<{
     id: string;
   }>;
+}
+
+export async function generateMetadata({
+  params,
+}: EventDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const { data: event } = await eventService.getById(id);
+  const t = await getTranslations('events');
+  
+  if (!event) {
+    return {
+      title: t('metaTitle'),
+      description: t('metaDescription'),
+    };
+  }
+  
+  return {
+    title: `${event.name} - HackaGallery`,
+    description: event.description || t('metaDescription'),
+  };
 }
 
 export default async function EventDetailPage({

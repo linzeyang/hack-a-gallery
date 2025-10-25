@@ -1,6 +1,10 @@
+'use client';
+
 import Link from "next/link";
+import { useTranslations } from 'next-intl';
 
 export default function Hero() {
+  const t = useTranslations('hero');
   return (
     <section
       className="relative overflow-hidden bg-linear-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900"
@@ -11,19 +15,12 @@ export default function Hero() {
           {/* Badge */}
           <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium mb-8">
             <span className="mr-2">🚀</span>
-            Powered by AI
+            {t('badge')}
           </div>
 
           {/* Main Heading */}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">
-            Where{" "}
-            <span className="text-blue-600 dark:text-blue-400 underline decoration-blue-600 decoration-4">
-              every
-            </span>{" "}
-            hackathon project{" "}
-            <span className="bg-linear-to-r from-yellow-400 via-yellow-500 to-amber-500 bg-clip-text text-transparent animate-pulse">
-              shines
-            </span>
+            {t('tagline')}
             <span className="inline-block ml-1 text-yellow-400 animate-pulse">
               ✨
             </span>
@@ -31,9 +28,7 @@ export default function Hero() {
 
           {/* Subheading */}
           <p className="max-w-2xl mx-auto text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-10">
-            Showcase your innovation, preserve your legacy, and connect with the
-            hackathon community. AI-powered insights help your projects get the
-            recognition they deserve.
+            {t('description')}
           </p>
 
           {/* CTA Buttons */}
@@ -42,13 +37,13 @@ export default function Hero() {
               href="/events"
               className="w-full sm:w-auto px-8 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors duration-150 ease-in-out shadow-lg hover:shadow-xl"
             >
-              Explore Events
+              {t('exploreEvents')}
             </Link>
             <Link
               href="/projects"
               className="w-full sm:w-auto px-8 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-medium transition-colors duration-150 ease-in-out shadow-lg hover:shadow-xl"
             >
-              Browse Projects
+              {t('browseProjects')}
             </Link>
           </div>
 
@@ -66,7 +61,7 @@ export default function Hero() {
                 100+
               </div>
               <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                Projects
+                {t('stats.projects')}
               </div>
             </div>
             <div>
@@ -77,7 +72,7 @@ export default function Hero() {
                 20+
               </div>
               <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                Hackathons
+                {t('stats.hackathons')}
               </div>
             </div>
             <div>
@@ -88,7 +83,7 @@ export default function Hero() {
                 200+
               </div>
               <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                Hackers
+                {t('stats.hackers')}
               </div>
             </div>
           </div>

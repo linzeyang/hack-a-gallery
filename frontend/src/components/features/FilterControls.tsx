@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import { PrizeFilterStatus } from "@/lib/types/prize";
 
@@ -129,6 +130,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             ))}
             {options.length === 0 && (
               <div className="px-4 py-2 text-sm text-gray-500">
+                {/* No options available - keeping in English as it's a technical message */}
                 No options available
               </div>
             )}
@@ -153,6 +155,8 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
   onClearAll,
   className = "",
 }) => {
+  const t = useTranslations("search");
+  
   const hasActiveFilters =
     selectedTechnologies.length > 0 ||
     selectedEvents.length > 0 ||
@@ -167,15 +171,15 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
   };
 
   const sortOptions = [
-    { value: "date", label: "Most Recent" },
-    { value: "title", label: "Alphabetical" },
-    { value: "popularity", label: "Most Popular" },
+    { value: "date", label: t("sortByDate") },
+    { value: "title", label: t("sortByTitle") },
+    { value: "popularity", label: t("sortByPopularity") },
   ] as const;
 
   const prizeStatusOptions = [
-    { value: "all", label: "All Projects" },
-    { value: "winners", label: "Winners Only" },
-    { value: "no-prizes", label: "No Prizes" },
+    { value: "all", label: t("allProjects") },
+    { value: "winners", label: t("winnersOnly") },
+    { value: "no-prizes", label: t("noPrizes") },
   ] as const;
 
   return (
@@ -185,35 +189,35 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
         {/* Technology Filter */}
         <div className="flex-1">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Technologies
+            {t("filterByTech")}
           </label>
           <MultiSelectDropdown
-            label="Technologies"
+            label={t("filterByTech")}
             options={technologies}
             selectedValues={selectedTechnologies}
             onChange={onTechnologyChange}
-            placeholder="Select technologies"
+            placeholder={t("selectTechnologies")}
           />
         </div>
 
         {/* Event Filter */}
         <div className="flex-1">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Events
+            {t("filterByEvent")}
           </label>
           <MultiSelectDropdown
-            label="Events"
+            label={t("filterByEvent")}
             options={events}
             selectedValues={selectedEvents}
             onChange={onEventChange}
-            placeholder="Select events"
+            placeholder={t("selectEvents")}
           />
         </div>
 
         {/* Prize Status Filter */}
         <div className="flex-1">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Prize Status
+            {t("prizeStatus")}
           </label>
           <select
             value={prizeStatus}
@@ -221,7 +225,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
               onPrizeStatusChange(e.target.value as PrizeFilterStatus)
             }
             className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[44px]"
-            aria-label="Filter projects by prize status"
+            aria-label={t("prizeStatus")}
           >
             {prizeStatusOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -234,7 +238,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
         {/* Sort Dropdown */}
         <div className="flex-1">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Sort By
+            {t("sortBy")}
           </label>
           <select
             value={sortBy}
@@ -242,7 +246,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
               onSortChange(e.target.value as "date" | "title" | "popularity")
             }
             className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[44px]"
-            aria-label="Sort projects by"
+            aria-label={t("sortBy")}
           >
             {sortOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -260,9 +264,9 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
               size="md"
               onClick={onClearAll}
               className="whitespace-nowrap"
-              aria-label="Clear all filters"
+              aria-label={t("clearFilters")}
             >
-              Clear All
+              {t("clearFilters")}
             </Button>
           </div>
         )}
@@ -271,7 +275,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
       {/* Active Filter Indicators */}
       {hasActiveFilters && (
         <div className="flex flex-wrap gap-2">
-          <span className="text-sm text-gray-600">Active filters:</span>
+          <span className="text-sm text-gray-600">{t("activeFilters")}:</span>
 
           {/* Technology Tags */}
           {selectedTechnologies.map((techId) => {
@@ -342,12 +346,12 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
           {/* Prize Status Tag */}
           {prizeStatus !== "all" && (
             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-800">
-              {prizeStatus === "winners" ? "Winners Only" : "No Prizes"}
+              {prizeStatus === "winners" ? t("winnersOnly") : t("noPrizes")}
               <button
                 type="button"
                 onClick={() => onPrizeStatusChange("all")}
                 className="ml-2 hover:text-yellow-600 focus:outline-none focus:text-yellow-600"
-                aria-label="Remove prize status filter"
+                aria-label={t("removePrizeFilter")}
               >
                 <svg
                   className="h-4 w-4"

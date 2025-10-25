@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import type { Prize } from "@/lib/types/event";
+import { useTranslations } from "next-intl";
 
 export interface PrizeTooltipProps {
   prizes: Prize[];
@@ -19,6 +20,7 @@ export const PrizeTooltip: React.FC<PrizeTooltipProps> = ({
   prizes,
   children,
 }) => {
+  const t = useTranslations("events");
   const [isVisible, setIsVisible] = useState(false);
 
   if (prizes.length === 0) {
@@ -37,7 +39,7 @@ export const PrizeTooltip: React.FC<PrizeTooltipProps> = ({
       <div
         role="button"
         tabIndex={0}
-        aria-label="Show prize details"
+        aria-label={t("showPrizeDetails")}
         aria-describedby="prize-tooltip"
       >
         {children}
@@ -62,7 +64,7 @@ export const PrizeTooltip: React.FC<PrizeTooltipProps> = ({
           {/* Tooltip Content */}
           <div className="relative">
             <p className="font-semibold mb-2 text-yellow-400">
-              {prizes.length === 1 ? "Prize Won" : "Prizes Won"}
+              {prizes.length === 1 ? t("prizeWon") : t("prizesWon")}
             </p>
             <ul className="space-y-2">
               {prizes.map((prize, index) => (

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/Card";
 import type { Event } from "@/lib/types/event";
 
@@ -10,6 +11,8 @@ export interface EventCardProps {
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
+  const t = useTranslations('events');
+  
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -25,11 +28,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
     const endDate = new Date(event.endDate);
 
     if (now < startDate) {
-      return { label: "Upcoming", color: "bg-blue-500" };
+      return { label: t('status.upcoming'), color: "bg-blue-500" };
     } else if (now >= startDate && now <= endDate) {
-      return { label: "Ongoing", color: "bg-green-500" };
+      return { label: t('status.ongoing'), color: "bg-green-500" };
     } else {
-      return { label: "Past", color: "bg-gray-500" };
+      return { label: t('status.past'), color: "bg-gray-500" };
     }
   };
 
@@ -111,7 +114,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
             </svg>
             <span className="font-semibold text-gray-900">
               {event.prizes.length}{" "}
-              {event.prizes.length === 1 ? "Prize" : "Prizes"}
+              {event.prizes.length === 1 ? t('prize') : t('prizes')}
             </span>
             {totalPrizeAmount > 0 && (
               <span className="ml-2 text-gray-600">
@@ -121,7 +124,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
           </div>
 
           <div className="text-xs sm:text-sm text-gray-500 truncate">
-            by {event.organizerName}
+            {t('by')} {event.organizerName}
           </div>
         </div>
       </div>

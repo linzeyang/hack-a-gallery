@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import type { Event, Prize } from "@/lib/types/event";
@@ -19,6 +20,7 @@ export const EventForm: React.FC<EventFormProps> = ({
   onCancel,
   isLoading = false,
 }) => {
+  const t = useTranslations('forms.event');
   const [formData, setFormData] = useState({
     name: initialData?.name || "",
     description: initialData?.description || "",
@@ -134,30 +136,30 @@ export const EventForm: React.FC<EventFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 gap-6">
         <Input
-          label="Event Name"
+          label={t('nameLabel')}
           name="name"
           value={formData.name}
           onChange={handleInputChange}
           error={errors.name}
-          placeholder="AWS AI Agent Global Hackathon 2025"
+          placeholder={t('namePlaceholder')}
           required
         />
 
         <Input
-          label="Description"
+          label={t('descriptionLabel')}
           name="description"
           inputType="textarea"
           value={formData.description}
           onChange={handleInputChange}
           error={errors.description}
-          placeholder="Describe your hackathon event..."
+          placeholder={t('descriptionPlaceholder')}
           rows={4}
           required
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
-            label="Start Date"
+            label={t('startDateLabel')}
             name="startDate"
             inputType="date"
             value={formData.startDate}
@@ -167,7 +169,7 @@ export const EventForm: React.FC<EventFormProps> = ({
           />
 
           <Input
-            label="End Date"
+            label={t('endDateLabel')}
             name="endDate"
             inputType="date"
             value={formData.endDate}
@@ -178,33 +180,33 @@ export const EventForm: React.FC<EventFormProps> = ({
         </div>
 
         <Input
-          label="Location"
+          label={t('locationLabel')}
           name="location"
           value={formData.location}
           onChange={handleInputChange}
           error={errors.location}
-          placeholder="Virtual, San Francisco, CA, etc."
+          placeholder={t('locationPlaceholder')}
           required
         />
 
         <Input
-          label="Organizer Name"
+          label={t('organizerLabel')}
           name="organizerName"
           value={formData.organizerName}
           onChange={handleInputChange}
           error={errors.organizerName}
-          placeholder="Your organization name"
+          placeholder={t('organizerPlaceholder')}
           required
         />
 
         <Input
-          label="Requirements"
+          label={t('requirementsLabel')}
           name="requirements"
           inputType="textarea"
           value={formData.requirements}
           onChange={handleInputChange}
           error={errors.requirements}
-          placeholder="Participation requirements, eligibility criteria, etc."
+          placeholder={t('requirementsPlaceholder')}
           rows={3}
         />
 
@@ -212,7 +214,7 @@ export const EventForm: React.FC<EventFormProps> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <label className="block text-sm font-medium text-gray-700">
-              Prizes
+              {t('prizesLabel')}
             </label>
             <Button
               type="button"
@@ -220,7 +222,7 @@ export const EventForm: React.FC<EventFormProps> = ({
               size="sm"
               onClick={addPrize}
             >
-              + Add Prize
+              + {t('addPrize')}
             </Button>
           </div>
 
@@ -231,7 +233,7 @@ export const EventForm: React.FC<EventFormProps> = ({
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-700">
-                  Prize {index + 1}
+                  {t('prizesLabel')} {index + 1}
                 </span>
                 {prizes.length > 1 && (
                   <button
@@ -239,44 +241,44 @@ export const EventForm: React.FC<EventFormProps> = ({
                     onClick={() => removePrize(index)}
                     className="text-red-600 hover:text-red-800 text-sm"
                   >
-                    Remove
+                    {t('remove')}
                   </button>
                 )}
               </div>
 
               <Input
-                label="Prize Title"
+                label={t('prizeTitle')}
                 value={prize.title}
                 onChange={(e) =>
                   handlePrizeChange(index, "title", e.target.value)
                 }
                 error={errors[`prize_${index}_title`]}
-                placeholder="Grand Prize, Best Design, etc."
+                placeholder={t('prizeTitlePlaceholder')}
               />
 
               <Input
-                label="Prize Amount"
+                label={t('prizeAmount')}
                 value={prize.amount}
                 onChange={(e) =>
                   handlePrizeChange(index, "amount", e.target.value)
                 }
                 error={errors[`prize_${index}_amount`]}
-                placeholder="$10,000"
+                placeholder={t('prizeAmountPlaceholder')}
               />
 
               <Input
-                label="Prize Description"
+                label={t('prizeDescription')}
                 inputType="textarea"
                 value={prize.description}
                 onChange={(e) =>
                   handlePrizeChange(index, "description", e.target.value)
                 }
-                placeholder="Description of the prize..."
+                placeholder={t('prizeDescriptionPlaceholder')}
                 rows={2}
               />
 
               <Input
-                label="Number of Winners"
+                label={t('numberOfWinners')}
                 inputType="number"
                 value={prize.maxWinners?.toString() || "1"}
                 onChange={(e) => {
@@ -288,7 +290,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                 error={errors[`prize_${index}_maxWinners`]}
                 placeholder="1"
                 min={1}
-                helpText="How many projects can win this prize?"
+                helpText={t('numberOfWinnersHelp')}
               />
             </div>
           ))}
@@ -303,10 +305,10 @@ export const EventForm: React.FC<EventFormProps> = ({
           onClick={onCancel}
           disabled={isLoading}
         >
-          Cancel
+          {t('cancelButton')}
         </Button>
         <Button type="submit" variant="primary" loading={isLoading}>
-          {initialData ? "Update Event" : "Create Event"}
+          {initialData ? t('updateButton') : t('submitButton')}
         </Button>
       </div>
     </form>

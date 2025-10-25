@@ -1,6 +1,11 @@
+'use client';
+
 import Link from "next/link";
+import { useTranslations } from 'next-intl';
 
 export default function Footer() {
+  const t = useTranslations('footer');
+  const tNav = useTranslations('nav');
   const currentYear = new Date().getFullYear();
 
   return (
@@ -13,7 +18,7 @@ export default function Footer() {
               HackaGallery
             </span>
             <span className="text-gray-500 text-sm">
-              Where every hackathon project shines
+              {t('tagline')}
             </span>
           </div>
 
@@ -23,13 +28,13 @@ export default function Footer() {
               href="/events"
               className="text-gray-600 hover:text-blue-600 transition-colors duration-150 ease-in-out text-sm"
             >
-              Events
+              {tNav('events')}
             </Link>
             <Link
               href="/projects"
               className="text-gray-600 hover:text-blue-600 transition-colors duration-150 ease-in-out text-sm"
             >
-              Projects
+              {tNav('projects')}
             </Link>
             <a
               href="https://github.com/linzeyang/hack-a-gallery"
@@ -37,7 +42,7 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="text-gray-600 hover:text-blue-600 transition-colors duration-150 ease-in-out text-sm"
             >
-              GitHub
+              {t('social.github')}
             </a>
           </div>
         </div>
@@ -45,7 +50,7 @@ export default function Footer() {
         {/* Copyright */}
         <div className="mt-6 pt-6 border-t border-gray-200 text-center">
           <p className="text-gray-500 text-sm">
-            © {currentYear} linzeyang. All rights reserved.
+            {t('copyright', { year: currentYear })}
           </p>
         </div>
       </div>

@@ -16,11 +16,35 @@ import { prizeAwardService } from "@/services/prizeAwardService";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { PrizeSection } from "@/components/features/PrizeSection";
 import type { PrizeAward } from "@/lib/types/prize";
+import { getTranslations } from 'next-intl/server';
+import type { Metadata } from 'next';
 
 interface ProjectDetailPageProps {
   params: Promise<{
     id: string;
   }>;
+}
+
+export async function generateMetadata({
+  params,
+}: ProjectDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const projectResponse = await projectService.getById(id);
+  const t = await getTranslations('projects');
+  
+  if (!projectResponse.success || !projectResponse.data) {
+    return {
+      title: t('metaTitle'),
+      description: t('metaDescription'),
+    };
+  }
+  
+  const project = projectResponse.data;
+  
+  return {
+    title: `${project.name} - HackaGallery`,
+    description: project.description || t('metaDescription'),
+  };
 }
 
 export default async function ProjectDetailPage({
