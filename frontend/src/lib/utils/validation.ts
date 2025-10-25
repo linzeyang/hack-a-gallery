@@ -112,9 +112,12 @@ export function validateProject(project: Partial<Project>): ValidationResult {
     errors.description = "Description is required";
   }
 
-  if (!project.githubUrl?.trim()) {
-    errors.githubUrl = "GitHub URL is required";
-  } else if (!isValidUrl(project.githubUrl)) {
+  // Optional GitHub URL validation
+  if (
+    project.githubUrl &&
+    project.githubUrl.trim() &&
+    !isValidUrl(project.githubUrl)
+  ) {
     errors.githubUrl = "Invalid GitHub URL format";
   }
 

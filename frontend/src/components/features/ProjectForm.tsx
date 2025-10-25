@@ -166,7 +166,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
 
       {/* GitHub URL */}
       <Input
-        label="GitHub URL *"
+        label="GitHub URL (Optional)"
         inputType="url"
         value={formData.githubUrl}
         onChange={(e) => handleInputChange("githubUrl", e.target.value)}

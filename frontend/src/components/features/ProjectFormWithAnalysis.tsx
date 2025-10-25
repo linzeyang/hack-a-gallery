@@ -215,7 +215,7 @@ export const ProjectFormWithAnalysis: React.FC<
         <button
           type="button"
           onClick={handleSkipAnalysis}
-          className="text-sm text-gray-500 hover:text-gray-700 underline"
+          className="text-base text-gray-600 hover:text-gray-800 underline font-medium"
         >
           Skip analysis and fill form manually
         </button>

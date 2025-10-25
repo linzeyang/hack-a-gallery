@@ -5,7 +5,7 @@ export interface Project {
   eventId: string;
   name: string;
   description: string;
-  githubUrl: string;
+  githubUrl?: string;
   demoUrl?: string;
   technologies: string[];
   teamMembers: TeamMember[];
