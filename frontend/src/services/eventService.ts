@@ -28,9 +28,17 @@ class EventService implements IEventService {
     try {
       const events = await this.storage.getAll<Event>("event:");
       const filteredEvents = events.filter((e) => !e.isHidden);
+
+      // Sort by start date descending (newest first)
+      const sortedEvents = filteredEvents.sort((a, b) => {
+        const dateA = new Date(a.startDate).getTime();
+        const dateB = new Date(b.startDate).getTime();
+        return dateB - dateA; // Descending order
+      });
+
       return {
         success: true,
-        data: filteredEvents,
+        data: sortedEvents,
       };
     } catch (error) {
       console.error("EventService.getAll error:", error);
