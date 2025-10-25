@@ -30,6 +30,14 @@ export const EventDetail: React.FC<EventDetailProps> = ({
     });
   };
 
+  const isEventPast = () => {
+    const now = new Date();
+    const endDate = new Date(event.endDate);
+    return now > endDate;
+  };
+
+  const isPast = isEventPast();
+
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Back Button */}
@@ -221,10 +229,12 @@ export const EventDetail: React.FC<EventDetailProps> = ({
           <Button
             variant="primary"
             className="w-full"
-            onClick={() => router.push(`/projects/submit?eventId=${event.id}`)}
-            aria-label={`Submit a project for ${event.name}`}
+            onClick={() => !isPast && router.push(`/projects/submit?eventId=${event.id}`)}
+            disabled={isPast}
+            aria-label={isPast ? "Event has ended" : `Submit a project for ${event.name}`}
+            title={isPast ? "This event has ended and is no longer accepting submissions" : undefined}
           >
-            Submit Project
+            {isPast ? "Event Ended" : "Submit Project"}
           </Button>
         </div>
       </div>
@@ -237,9 +247,9 @@ export const EventDetail: React.FC<EventDetailProps> = ({
         {projects.length === 0 ? (
           <EmptyState
             title="No Projects Yet"
-            description="Be the first to submit a project for this hackathon!"
-            actionLabel="Submit Project"
-            onAction={() => router.push(`/projects/submit?eventId=${event.id}`)}
+            description={isPast ? "This event has ended and is no longer accepting submissions." : "Be the first to submit a project for this hackathon!"}
+            actionLabel={isPast ? "Event Ended" : "Submit Project"}
+            onAction={isPast ? undefined : () => router.push(`/projects/submit?eventId=${event.id}`)}
           />
         ) : (
           <div className="space-y-8">
