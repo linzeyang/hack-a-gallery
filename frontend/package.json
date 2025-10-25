@@ -24,9 +24,12 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.709.0",
     "@aws-sdk/lib-dynamodb": "^3.709.0",
+    "@tailwindcss/typography": "^0.5.19",
     "next": "16.0.0",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

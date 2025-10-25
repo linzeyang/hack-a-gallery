@@ -2,6 +2,8 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -74,9 +76,11 @@ export const EventDetail: React.FC<EventDetailProps> = ({
               </h2>
             </CardHeader>
             <CardBody className="p-4 sm:p-6">
-              <p className="text-sm sm:text-base text-gray-700 whitespace-pre-wrap">
-                {event.description}
-              </p>
+              <div className="prose prose-sm sm:prose-base max-w-none text-gray-700">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {event.description}
+                </ReactMarkdown>
+              </div>
             </CardBody>
           </Card>
 
@@ -86,9 +90,11 @@ export const EventDetail: React.FC<EventDetailProps> = ({
                 <h2 className="text-xl sm:text-2xl font-bold">Requirements</h2>
               </CardHeader>
               <CardBody className="p-4 sm:p-6">
-                <p className="text-sm sm:text-base text-gray-700 whitespace-pre-wrap">
-                  {event.requirements}
-                </p>
+                <div className="prose prose-sm sm:prose-base max-w-none text-gray-700">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {event.requirements}
+                  </ReactMarkdown>
+                </div>
               </CardBody>
             </Card>
           )}
@@ -229,10 +235,18 @@ export const EventDetail: React.FC<EventDetailProps> = ({
           <Button
             variant="primary"
             className="w-full"
-            onClick={() => !isPast && router.push(`/projects/submit?eventId=${event.id}`)}
+            onClick={() =>
+              !isPast && router.push(`/projects/submit?eventId=${event.id}`)
+            }
             disabled={isPast}
-            aria-label={isPast ? "Event has ended" : `Submit a project for ${event.name}`}
-            title={isPast ? "This event has ended and is no longer accepting submissions" : undefined}
+            aria-label={
+              isPast ? "Event has ended" : `Submit a project for ${event.name}`
+            }
+            title={
+              isPast
+                ? "This event has ended and is no longer accepting submissions"
+                : undefined
+            }
           >
             {isPast ? "Event Ended" : "Submit Project"}
           </Button>
@@ -247,9 +261,17 @@ export const EventDetail: React.FC<EventDetailProps> = ({
         {projects.length === 0 ? (
           <EmptyState
             title="No Projects Yet"
-            description={isPast ? "This event has ended and is no longer accepting submissions." : "Be the first to submit a project for this hackathon!"}
+            description={
+              isPast
+                ? "This event has ended and is no longer accepting submissions."
+                : "Be the first to submit a project for this hackathon!"
+            }
             actionLabel={isPast ? "Event Ended" : "Submit Project"}
-            onAction={isPast ? undefined : () => router.push(`/projects/submit?eventId=${event.id}`)}
+            onAction={
+              isPast
+                ? undefined
+                : () => router.push(`/projects/submit?eventId=${event.id}`)
+            }
           />
         ) : (
           <div className="space-y-8">
