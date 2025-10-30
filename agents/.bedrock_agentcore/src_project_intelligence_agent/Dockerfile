@@ -11,6 +11,7 @@ ENV UV_SYSTEM_PYTHON=1 \
     AWS_DEFAULT_REGION=us-west-2
 
 COPY requirements.txt requirements.txt
+
 # Install from requirements file
 RUN uv pip install -r requirements.txt
 
@@ -31,5 +32,5 @@ EXPOSE 8080
 COPY . .
 
 # Use the full module path
-# Run main.py directly since it's not a package module
-CMD ["opentelemetry-instrument", "python", "main.py"]
+
+CMD ["opentelemetry-instrument", "python", "-m", "project_intelligence_agent"]
